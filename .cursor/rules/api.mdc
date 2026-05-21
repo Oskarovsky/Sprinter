@@ -1,0 +1,31 @@
+---
+description: Astro API route conventions for src/pages/api
+globs: src/pages/api/**/*.ts
+alwaysApply: false
+---
+
+# API Routes
+
+File-based routing: `src/pages/api/<path>.ts` maps to `/api/<path>`.
+
+## Handler shape
+
+- Export the HTTP verb as a named export typed `APIRoute` (`GET`, `POST`, etc.).
+- Match an existing sibling: `@src/pages/api/auth/signin.ts` for form POST flows, `@src/pages/api/auth/callback.ts` for query-param GET flows.
+
+## Supabase
+
+- Create the server client with `createClient(context.request.headers, context.cookies)` from `@/lib/supabase`.
+- If `createClient` returns `null`, redirect to the relevant auth page with `?error=` (URL-encoded). Do not throw or return raw 500s.
+- Never read `SUPABASE_URL` / `SUPABASE_KEY` outside `@/lib/supabase` or `@astro.config.mjs`.
+
+## Auth flows
+
+- Form POST routes: parse `context.request.formData()`, redirect on success or failure (auth forms use redirects, not JSON).
+- OAuth / external redirects: validate `next` with a same-origin path guard like `safeNextPath` in `@src/pages/api/auth/callback.ts` — reject absolute URLs and `//` open redirects.
+- Page protection lives in `@src/middleware.ts` (`PROTECTED_ROUTES`); API routes are not auto-protected.
+
+## Adding routes
+
+- Place new handlers under `src/pages/api/<feature>/` using kebab-case URL segments.
+- Document new user-facing routes in the README auth/routes table when they ship.

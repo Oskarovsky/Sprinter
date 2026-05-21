@@ -4,6 +4,8 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
+import { AuthDivider } from "@/components/auth/AuthDivider";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 const MIN_PASSWORD_LENGTH = 6;
 
@@ -129,6 +131,9 @@ export default function SignUpForm({ serverError }: Props) {
       <SubmitButton pendingText="Creating account..." icon={<UserPlus className="size-4" />}>
         Create account
       </SubmitButton>
+
+      <AuthDivider />
+      <GoogleAuthButton />
     </form>
   );
 }
