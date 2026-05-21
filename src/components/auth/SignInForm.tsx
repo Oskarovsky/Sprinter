@@ -4,6 +4,8 @@ import { FormField } from "@/components/auth/FormField";
 import { PasswordToggle } from "@/components/auth/PasswordToggle";
 import { SubmitButton } from "@/components/auth/SubmitButton";
 import { ServerError } from "@/components/auth/ServerError";
+import { AuthDivider } from "@/components/auth/AuthDivider";
+import { GoogleAuthButton } from "@/components/auth/GoogleAuthButton";
 
 interface Props {
   serverError?: string | null;
@@ -82,6 +84,9 @@ export default function SignInForm({ serverError }: Props) {
       <SubmitButton pendingText="Signing in..." icon={<LogIn className="size-4" />}>
         Sign in
       </SubmitButton>
+
+      <AuthDivider />
+      <GoogleAuthButton />
     </form>
   );
 }

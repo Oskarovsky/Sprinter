@@ -141,12 +141,39 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 
 | Route                 | Description                                                             |
 | --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
+| `/auth/signin`        | Email/password sign-in + Google OAuth                                   |
+| `/auth/signup`        | Email/password sign-up + Google OAuth                                   |
 | `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
+| `/api/auth/google`    | Starts Google OAuth (redirects to Google)                               |
+| `/api/auth/callback`  | OAuth callback — exchanges code for session                             |
 | `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
+
+### Google OAuth (FR-012)
+
+Required for sign-in and sign-up with Google.
+
+**Cloud Supabase project**
+
+1. [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create **OAuth client ID** (Web application).
+2. Authorized redirect URI: `https://<project-ref>.supabase.co/auth/v1/callback` (from Supabase → Authentication → Providers → Google).
+3. Supabase dashboard → **Authentication → Providers → Google** → enable, paste Client ID and Client Secret.
+4. Supabase → **Authentication → URL Configuration** → add your app callback(s), e.g. `http://localhost:4321/api/auth/callback` and your production URL.
+
+**Local Supabase (`supabase start`)**
+
+1. Create the same Google OAuth client; add redirect URI `http://127.0.0.1:54321/auth/v1/callback`.
+2. Add to `.env` (used by the Supabase CLI stack):
+
+```
+SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=<client-id>
+SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=<client-secret>
+```
+
+3. Restart local Supabase: `npx supabase stop && npx supabase start`.
+
+Google sign-in uses the **Continue with Google** button on `/auth/signin` and `/auth/signup`.
 
 ## Deployment
 
