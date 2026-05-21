@@ -27,6 +27,6 @@ Stack and setup: `@README.md`. Product rules: obey `@context/foundation/prd.md`.
 
 ## Further reading
 
-- No test runner configured; do not add speculative test commands until `@package.json` defines them.
+- Run `npm run test:coverage` before pushing; CI runs it alongside lint and build. Coverage must print Statements/Branches/Functions/Lines % to stdout per `@context/foundation/lessons.md`.
 - 10xDevs workflow router: `@CLAUDE.md`
 - Cursor course rules: `@.cursor/rules/10x-course.mdc`
