@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(npm *)",
+      "Shell(npx *)",
+      "Shell(node *)",
+      "Shell(git add *)",
+      "Shell(git commit *)",
+      "Shell(git diff *)",
+      "Shell(git log *)",
+      "Shell(git status *)",
+      "Shell(git branch *)",
+      "Shell(git checkout *)",
+      "Shell(git stash *)"
+    ],
+    "ask": [
+      "Shell(curl *)",
+      "Shell(wget *)",
+      "Shell(git push *)",
+      "Shell(git push)"
+    ],
+    "deny": [
+      "Shell(rm -rf *)"
+    ]
+  }
+}
