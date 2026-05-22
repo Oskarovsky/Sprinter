@@ -1,6 +1,6 @@
 ---
 project: "10xSprinter"
-version: 1
+version: 2
 status: draft
 created: 2026-05-20
 context_type: greenfield
@@ -70,6 +70,34 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 - After reveal, the average is shown alongside individual votes
 - Votes are stored only for the active session (no past-session browser)
 
+### US-02: Facilitator generates planning tasks from raw notes (Sprinter Draft)
+
+- Given an authenticated user on the planning session page with raw notes (epic summary, meeting notes, backlog snippet)
+- When they paste the notes and request task generation
+- Then the system proposes one or more planning-poker-ready tasks, each with a title, description, acceptance criteria, and open questions, and the user can apply a proposal to the task creation form
+
+### Acceptance Criteria
+
+- Generated tasks include at least a title; description and lists may be empty but the structure is present
+- User explicitly chooses Use this task — nothing is auto-created without confirmation
+- Generation works for any authenticated session participant (flat roles); primary persona remains the facilitator
+- If AI is unavailable, a deterministic fallback still returns usable task drafts from the pasted notes
+- Pasted notes are not shown to other participants unless the user creates a task from them
+
+### US-03: Team gets discussion prompts after divergent votes (Sprinter Coach)
+
+- Given a task in revealed status with at least two story-point votes that meet the divergence threshold
+- When a participant requests discussion prompts (or the panel is shown after reveal — dopasuj do implementacji)
+- Then the system returns a short summary and 3–5 questions to align scope and assumptions — without recommending a final story-point value
+
+#### Acceptance Criteria
+
+- Coach appears only after reveal, never during blind voting
+- Coach is offered when vote spread indicates divergence (e.g. max − min ≥ 3, or max ≥ 2× min)
+- Prompts reference the task title/description and the revealed vote distribution, not hidden votes
+- AI does not output a “correct” or “recommended” story-point estimate
+- If AI is unavailable, fallback questions are still shown
+
 ## Functional Requirements
 
 ### Authentication
@@ -80,6 +108,10 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
   > Socrates: Counter-argument considered: "auth is overhead for a ceremony tool used weekly." Resolution: kept; accounts required for identified votes in the live session.
 - FR-012: User can register or log in with Google SSO. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
+- FR-013: User can paste raw notes and generate draft planning-poker tasks (title, description, acceptance criteria, open questions). Priority: must-have
+- FR-014: User can apply a generated draft to the task creation form without auto-submitting. Priority: must-have
+- FR-015: After reveal, when votes are divergent, user can request AI-generated discussion questions for the team. Priority: must-have
+- FR-016: System uses a server-side AI provider when configured; otherwise serves a non-AI fallback with the same response shape. Priority: must-have
 
 ### Session & tasks
 
@@ -145,6 +177,7 @@ Every participant must be authenticated before joining a voting session.
 - **Retro ceremonies:** No sticky-note / retrospective board in MVP; planning poker only.
 - **Native mobile apps:** Desktop browser only; no iOS/Android clients in MVP.
 - **Custom story-point algorithm:** No proprietary estimation logic — standard Fibonacci-style (or fixed) point scale only; the product averages selections, it does not invent points.
+- **AI-estimated story points**: Sprinter AI must not suggest, predict, or display a recommended story-point value before or during blind voting. Draft and Coach assist preparation and discussion only; the team decides points through planning poker.
 
 ## Open Questions
 
