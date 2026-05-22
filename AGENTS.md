@@ -8,6 +8,10 @@ Stack and setup: `@README.md`. Product rules: obey `@context/foundation/prd.md`.
 - Add new protected pages to `PROTECTED_ROUTES` in `@src/middleware.ts` before shipping; unlisted routes stay public.
 - Do not write under `context/archive/` — archived foundation docs are immutable (see `@CLAUDE.md` sentinel).
 - Run `npm run lint` before pushing; CI on `master` runs `astro sync`, lint, and build with GitHub `SUPABASE_URL` / `SUPABASE_KEY` secrets.
+- **Secret Scoping:** Never read raw environment variables via `process.env`. All Supabase and system credentials must strictly leverage the Astro environment schema configuration via `@astro.config.mjs`.
+- **Server-Side Supabase Execution:** Execute all sensitive data fetching, mutations, and Supabase writes strictly on the server side (inside Astro frontmatter `---` or under `src/pages/api/*`).
+- **PRD Truth Source:** Before writing any business logic or adding database/state fields, you must read and cross-reference `@context/foundation/prd.md`. Do not invent domain behavior that deviates from this file.
+- **Immutable Archives:** Never attempt to edit, rewrite, or add any files under `context/archive/`. Treat this directory as completely immutable.
 
 ## Coding style
 
