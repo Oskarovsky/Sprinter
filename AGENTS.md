@@ -11,8 +11,6 @@ Stack and setup: `@README.md`. Product rules: obey `@context/foundation/prd.md`.
 
 ## Coding style
 
-- Import via `@/` per `@tsconfig.json` paths — do not add path aliases without updating that file.
-- Components: PascalCase `.astro` / `.tsx` under `src/components/` (e.g. `Welcome.astro`, `ui/` shadcn-style pieces).
 - Pre-commit: Husky runs `lint-staged` per `@package.json` — do not bypass hooks.
 
 ## Project structure
