@@ -1,8 +1,9 @@
 ---
 project: "10xSprinter"
-version: 2
+version: 3
 status: draft
 created: 2026-05-20
+updated: 2026-05-25
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -19,13 +20,15 @@ During Scrum work in a company dev team, there is no web tool that unifies popul
 
 The gap is a **missing capability**, not merely friction inside an otherwise adequate toolchain. Teams currently tolerate good-enough free poker tools and do not push for a unified product until they also need retro and historical continuity in the same place. Longer-term vision (post-MVP): combine poker and retro with stored history. MVP focuses on planning poker only; retro, browsing past votes, mobile apps, and multi-room support are explicitly deferred.
 
+MVP also lets the session facilitator link an external GitHub or GitLab repository so **Sprinter Analyst** can produce a **reference-only** story-point vote from code-complexity signals after reveal — separate from the human team average.
+
 ## User & Persona
 
 ### Primary persona: Facilitator
 
 **Role:** Scrum Master or tech lead on a company dev team.
 
-**Context:** Runs planning / estimation sessions for the team. Enters the task (name required, description optional), starts voting, and reads the aggregated result (average and per-participant votes).
+**Context:** Runs planning / estimation sessions for the team. Optionally links the team's external repository (GitHub or GitLab), enters the task (name required, description optional), starts voting, and reads the aggregated result (human average, per-participant votes, and optional Sprinter Analyst reference vote).
 
 **Moment they reach for the product:** The team is about to estimate work; the facilitator needs a shared session where participants can vote on story points without juggling separate tools.
 
@@ -42,7 +45,7 @@ End-to-end planning-poker session in a single shared room:
 3. A participant creates a task (title required, description optional) and starts voting.
 4. Other participants select story points for that task.
 5. Individual votes remain hidden until the task creator triggers **Reveal**.
-6. After reveal, the app shows each participant's vote and the calculated average.
+6. After reveal, the app shows each participant's vote and the calculated **human** average (Sprinter Analyst vote, if present, is shown separately and excluded from that average).
 
 Session data (votes for the current task/session) is persisted only to support the live flow — not for browsing past sessions in MVP.
 
@@ -55,6 +58,7 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 - **Blind voting until reveal:** No participant (including the task creator) sees others' point selections until the creator clicks Reveal (or equivalent).
 - **No history UI in MVP:** Browsing previous votes/sessions remains out of scope; storage serves the active session only.
 - **Single room:** No multi-room / multi-team support in MVP (per seed non-goals).
+- **Analyst is reference-only:** Sprinter Analyst may show a story-point vote after reveal but it never enters the human team average and is never visible before reveal.
 
 ## User Stories
 
@@ -62,12 +66,12 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 
 - **Given** two or more authenticated users in the shared planning session (via email/password or Google SSO)
 - **When** one user creates a task (title required, description optional), starts voting, each participant selects a story-point value, and the task creator clicks Reveal
-- **Then** every participant sees each person's vote and the calculated average, and no point values were visible before reveal
+- **Then** every participant sees each person's vote and the calculated human average, and no point values were visible before reveal
 
 #### Acceptance Criteria
 
 - Before reveal, participants can see who has voted but not which points were selected
-- After reveal, the average is shown alongside individual votes
+- After reveal, the human average is shown alongside individual human votes
 - Votes are stored only for the active session (no past-session browser)
 
 ### US-02: Facilitator generates planning tasks from raw notes (Sprinter Draft)
@@ -98,6 +102,23 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 - AI does not output a “correct” or “recommended” story-point estimate
 - If AI is unavailable, fallback questions are still shown
 
+### US-04: Facilitator links a repo; Sprinter Analyst provides a reference vote after reveal
+
+- **Given** the session facilitator has linked one external GitHub or GitLab repository to the planning session and a task is in voting or revealed status
+- **When** voting completes and the task creator clicks Reveal
+- **Then** every participant sees human votes and the human team average, plus a visually distinct **Sprinter Analyst** story-point vote with a short rationale derived from code-complexity analysis — and the Analyst vote is **not** included in the average
+
+#### Acceptance Criteria
+
+- Only the session facilitator (who linked the repo) can connect, update, or disconnect the repository; other participants cannot
+- MVP supports GitHub and GitLab repository URLs only; local filesystem paths are out of scope
+- Repository access credentials are stored server-side; repo contents and tokens are not exposed to other participants before reveal
+- Analyst vote uses the same Fibonacci-style scale as human voters
+- Analyst vote and rationale appear only after reveal, never during blind voting
+- Team average is computed from **human votes only**; Analyst vote is labeled as reference-only
+- If the repo is unreachable, access is denied, or AI analysis fails, human voting and reveal still succeed without an Analyst vote (graceful degradation)
+- Linking a repo is optional; sessions without a linked repo behave as in US-01
+
 ## Functional Requirements
 
 ### Authentication
@@ -122,6 +143,16 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 - FR-005: User can start voting on a task they created. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
 
+### Repository & Sprinter Analyst
+
+- FR-017: Session facilitator can link one external GitHub or GitLab repository URL to the planning session. Priority: must-have
+- FR-018: Session facilitator can update or disconnect the linked repository. Priority: must-have
+- FR-019: System verifies repository access server-side (public repo or authorized credentials supplied by the facilitator). Priority: must-have
+- FR-020: When a repository is linked, system computes a sealed Sprinter Analyst story-point vote from code-complexity analysis before reveal. Priority: must-have
+- FR-021: After reveal, system shows the Analyst vote and a short rationale (complexity signals, affected areas) separately from human votes. Priority: must-have
+- FR-022: Team average excludes the Analyst vote; only authenticated human participants count toward the average. Priority: must-have
+- FR-023: Local filesystem project paths are not supported in MVP. Priority: must-have
+
 ### Voting
 
 - FR-006: User can select a story-point value for the active task. Priority: must-have
@@ -130,7 +161,7 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
   > Socrates: No counter-argument; it stands as written.
 - FR-008: Task creator can reveal all votes for a task. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
-- FR-009: User can see each participant's vote and the calculated average after reveal. Priority: must-have
+- FR-009: User can see each participant's vote and the calculated human average after reveal. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
 - FR-010: System hides story-point values until the task creator reveals. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
@@ -143,20 +174,32 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 ## Non-Functional Requirements
 
 - Story-point values remain invisible to all participants until the task creator reveals; a refresh or new tab must not expose others' selections early.
-- Within 3 seconds of the creator triggering Reveal, every participant in the session sees the same numeric average and sorted vote list.
+- Within 3 seconds of the creator triggering Reveal, every participant in the session sees the same human numeric average, sorted human vote list, and (when a repo is linked and analysis succeeded) the same Sprinter Analyst reference vote and rationale.
 - Within 3 seconds of a participant submitting a vote, other participants see that person's name (or equivalent) in the "who voted" indicator — without seeing the point value.
 - MVP supports current Chrome, Firefox, Safari, and Edge on desktop; mobile native apps are out of scope.
 - Participant email addresses are not shown to other users in the session UI; only display names appear alongside votes.
 
 ## Business Logic
 
-The app computes the team average from blind individual story-point selections.
+### Human team average
 
-**Inputs:** Active task (title and optional description), each participant's story-point selection, participant identity (user name), and the task creator's reveal action.
+The app computes the team average from blind individual story-point selections by **authenticated human participants only**.
 
-**Output:** After reveal — a numeric average of the story-point votes, a sorted list of votes paired with user names, and (during voting) a list of who has voted without exposing point values.
+**Inputs:** Active task (title and optional description), each human participant's story-point selection, participant identity (user name), and the task creator's reveal action.
 
-**How the user encounters it:** Before reveal, participants only see who has voted (not point values). After the task creator clicks Reveal, all participants see the full sorted vote list and the computed average.
+**Output:** After reveal — a numeric average of human story-point votes, a sorted list of human votes paired with user names, and (during voting) a list of who has voted without exposing point values.
+
+**How the user encounters it:** Before reveal, participants only see who has voted (not point values). After the task creator clicks Reveal, all participants see the full sorted human vote list and the computed human average.
+
+### Sprinter Analyst reference vote
+
+When the session facilitator has linked an external GitHub or GitLab repository, the system produces one Analyst story-point vote from server-side code-complexity analysis scoped to the active task.
+
+**Inputs:** Linked repository (URL + server-side access), active task (title and optional description), optional path or module hints if captured later.
+
+**Output:** After reveal only — one Fibonacci-style story-point value labeled **Sprinter Analyst**, plus a short rationale summary (e.g. files touched, complexity signals). The Analyst vote is **excluded** from the human team average.
+
+**How the user encounters it:** Analyst output is invisible before reveal. After reveal it appears as a separate reference row/panel, visually distinct from human voters. If analysis fails, reveal proceeds without Analyst output.
 
 ## Access Control
 
@@ -167,7 +210,9 @@ The app computes the team average from blind individual story-point selections.
 
 Every participant must be authenticated before joining a voting session.
 
-**Roles:** Flat — no separate facilitator, admin, or guest roles in MVP. Permissions are the same for all authenticated users. The facilitator persona is a usage pattern: whoever creates the task and starts voting leads the session.
+**Roles:** Flat — no separate facilitator, admin, or guest roles in MVP. Permissions are the same for all authenticated users for voting and task creation. The facilitator persona is a usage pattern: whoever creates the task and starts voting leads the session.
+
+**Repository linking (facilitator-only exception):** Only the user who linked the external repository to the session may connect, update, or disconnect it. Other participants cannot view repo credentials or trigger repo fetch; they only see Analyst output after reveal when linking succeeded.
 
 **Note vs. seed notes:** Original idea notes proposed username-only login; shaped decision is email + password plus Google SSO.
 
@@ -176,9 +221,14 @@ Every participant must be authenticated before joining a voting session.
 - **Session history UI:** MVP does not let users browse or search previous votes or past sessions — storage serves the live session only.
 - **Retro ceremonies:** No sticky-note / retrospective board in MVP; planning poker only.
 - **Native mobile apps:** Desktop browser only; no iOS/Android clients in MVP.
-- **Custom story-point algorithm:** No proprietary estimation logic — standard Fibonacci-style (or fixed) point scale only; the product averages selections, it does not invent points.
-- **AI-estimated story points**: Sprinter AI must not suggest, predict, or display a recommended story-point value before or during blind voting. Draft and Coach assist preparation and discussion only; the team decides points through planning poker.
+- **Custom story-point algorithm:** No proprietary estimation logic — standard Fibonacci-style (or fixed) point scale only; the product averages human selections, it does not invent points for the team average.
+- **AI in the human average:** Sprinter Analyst may show a reference story-point vote after reveal when a repo is linked, but that vote never enters the human team average and is never visible before reveal. Sprinter Draft and Sprinter Coach remain preparation/discussion aids only — they do not replace human planning poker.
+- **Local project paths:** MVP does not read code from a facilitator's local filesystem; only external GitHub or GitLab repository URLs.
 
 ## Open Questions
 
 1. **target_scale ballparks** — Input specifies `users: small` (~10 users on one dev team). `qps` and `data_volume` ballparks were not captured. Owner: user. By: before stack selection.
+2. **Repository auth mechanism** — Public repos only vs. facilitator-supplied PAT vs. GitHub/GitLab OAuth app. Owner: user + implementer. By: before Sprinter Analyst implementation.
+3. **Task-to-code scope** — How Analyst maps a task to repo files in MVP: title/description inference only, optional path hints on the task form, or facilitator-selected paths. Owner: user. By: before FR-020 implementation.
+4. **GitLab self-hosted** — Whether MVP supports gitlab.com only or also self-managed GitLab instances. Owner: user. By: before FR-017 implementation.
+5. **MVP timeline impact** — Repo fetch + code analysis + Analyst vote adds scope beyond core poker; confirm 3-week after-hours budget still holds or defer Analyst to a follow-on milestone. Owner: user. By: before `/10x-plan` or implementation.
