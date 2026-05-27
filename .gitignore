@@ -26,3 +26,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# local-only manual smoke (F-01); run: npx tsx scripts/session-smoke.ts
+scripts/session-smoke.ts
