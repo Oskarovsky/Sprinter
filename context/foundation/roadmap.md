@@ -29,7 +29,7 @@ During Scrum work in a company dev team, there is no web tool that unifies popul
 
 | ID | Change ID | Outcome (user can …) | Prerequisites | PRD refs | Status |
 |---|---|---|---|---|---|
-| F-01 | session-data-schema | (foundation) persist sessions, tasks, and votes for the live room | — | FR-003, FR-004, FR-011 | proposed |
+| F-01 | session-data-schema | (foundation) persist sessions, tasks, and votes for the live room | — | FR-003, FR-004, FR-011 | done |
 | F-02 | live-session-sync | (foundation) broadcast who-voted and reveal updates within NFR latency | F-01 | FR-007, FR-008, FR-010 | done |
 | F-03 | ai-provider-fallback | (foundation) call server-side AI when configured; deterministic fallback otherwise | — | FR-016 | proposed |
 | S-01 | blind-planning-poker | run a full blind planning-poker vote and see the human average after reveal | F-01, F-02 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012 | proposed |
@@ -73,7 +73,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sequenced first because baseline has no domain schema; every vertical slice depends on persisted session state.
-- **Status:** proposed
+- **Status:** done
 
 ### F-02: Live session sync
 
@@ -187,3 +187,4 @@ Foundations below assume these are present and do NOT re-scaffold them.
 ## Done
 
 - **F-02: (foundation) who-voted indicators and reveal outcomes propagate to all session participants within NFR latency.** — Archived 2026-05-27 → `context/archive/2026-05-27-live-session-sync/`. Lesson: —.
+- **F-01: (foundation) sessions, tasks, votes, and reveal state persist in Supabase for the single shared room.** — Archived 2026-05-27 → `context/archive/2026-05-27-gate-product-routes/`. Lesson: —.
