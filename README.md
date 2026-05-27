@@ -111,7 +111,19 @@ npx supabase stop
 
 The local Studio UI is available at `http://localhost:54323`.
 
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
+Domain tables for planning poker live in `supabase/migrations/`. After pulling schema changes, apply them locally:
+
+```bash
+npx supabase db reset
+```
+
+Or push to a linked cloud project:
+
+```bash
+npx supabase db push
+```
+
+Tables: `planning_sessions` (single default room), `profiles`, `tasks`, `votes`, plus the `vote_participation` view for blind voting.
 
 ### Using a cloud Supabase project instead
 
