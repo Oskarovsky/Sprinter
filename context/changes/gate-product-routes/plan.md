@@ -277,38 +277,38 @@ Small-team MVP (~10 users); no special indexing beyond `(session_id, created_at)
 
 #### Automated
 
-- [x] 1.1 Migration file exists under `supabase/migrations/`
-- [x] 1.2 `supabase db reset` exits 0 against local Supabase
-- [x] 1.3 SQL applies without error: enums, tables, RLS, view, seed row present
+- [x] 1.1 Migration file exists under `supabase/migrations/` — 42ec82b
+- [x] 1.2 `supabase db reset` exits 0 against local Supabase — 42ec82b
+- [x] 1.3 SQL applies without error: enums, tables, RLS, view, seed row present — 42ec82b
 
 #### Manual
 
-- [x] 1.4 Confirm `planning_sessions` has exactly one `default` row
-- [x] 1.5 Confirm RLS blocks cross-user story_points before reveal
-- [x] 1.6 Confirm `vote_participation` omits peer story_points before reveal
+- [x] 1.4 Confirm `planning_sessions` has exactly one `default` row — 42ec82b
+- [x] 1.5 Confirm RLS blocks cross-user story_points before reveal — 42ec82b
+- [x] 1.6 Confirm `vote_participation` omits peer story_points before reveal — 42ec82b
 
 ### Phase 2: Server-side domain types and repository modules
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes — 42ec82b
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout — 42ec82b
+- [x] 2.3 `npm run build` passes — 42ec82b
 
 #### Manual
 
-- [x] 2.4 Optional local smoke: create task, cast votes, reveal via repository helpers against local Supabase
+- [x] 2.4 Optional local smoke: create task, cast votes, reveal via repository helpers against local Supabase — 42ec82b
 
 ### Phase 3: Gate product routes
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run test:coverage` passes
-- [x] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes — 42ec82b
+- [x] 3.2 `npm run test:coverage` passes — 42ec82b
+- [x] 3.3 `npm run build` passes — 42ec82b
 
 #### Manual
 
-- [x] 3.4 Logged out visit to `/session` redirects to sign-in
-- [x] 3.5 Logged in visit to `/session` renders stub page
-- [x] 3.6 Dashboard link to `/session` works; `/support` stays public
+- [x] 3.4 Logged out visit to `/session` redirects to sign-in — 42ec82b
+- [x] 3.5 Logged in visit to `/session` renders stub page — 42ec82b
+- [x] 3.6 Dashboard link to `/session` works; `/support` stays public — 42ec82b
