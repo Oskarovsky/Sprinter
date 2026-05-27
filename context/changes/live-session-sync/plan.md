@@ -245,35 +245,35 @@ Wire Realtime channels to API refetch and mount minimal live panel on `/session`
 
 #### Automated
 
-- [x] 1.1 Migration file exists under `supabase/migrations/`
-- [x] 1.2 `supabase db reset` exits 0 locally
+- [x] 1.1 Migration file exists under `supabase/migrations/` — 8ea006f
+- [x] 1.2 `supabase db reset` exits 0 locally — 8ea006f
 
 #### Manual
 
-- [x] 1.3 `votes` and `tasks` in `supabase_realtime` publication (Studio)
+- [x] 1.3 `votes` and `tasks` in `supabase_realtime` publication (Studio) — 8ea006f
 
 ### Phase 2: Browser Supabase client and session read API
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes on new/edited files
-- [ ] 2.2 `npm run build` passes
+- [x] 2.1 `npm run lint` passes on new/edited files — b4edc40
+- [x] 2.2 `npm run build` passes — b4edc40
 
 #### Manual
 
-- [ ] 2.3 Unauthenticated participation API returns 401
-- [ ] 2.4 Authenticated participation API omits peer story points before reveal
+- [x] 2.3 Unauthenticated participation API returns 401 — b4edc40
+- [x] 2.4 Authenticated participation API omits peer story points before reveal — b4edc40
 
 ### Phase 3: Realtime subscription module and live UI
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes — 80a7313
+- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout — 80a7313
+- [x] 3.3 `npm run build` passes — 80a7313
 
 #### Manual
 
-- [ ] 3.4 Two-browser vote sync ≤3s without leaking peer points
-- [ ] 3.5 Reveal sync ≤3s with points visible on both clients
-- [ ] 3.6 Logged-out `/session` redirect; `/support` public
+- [x] 3.4 Two-browser vote sync ≤3s without leaking peer points — 80a7313
+- [x] 3.5 Reveal sync ≤3s with points visible on both clients — 80a7313
+- [x] 3.6 Logged-out `/session` redirect; `/support` public — 80a7313
