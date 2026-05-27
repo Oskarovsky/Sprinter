@@ -101,7 +101,11 @@ npx supabase start
 ```
 SUPABASE_URL=http://127.0.0.1:54321
 SUPABASE_KEY=<anon key from CLI output>
+PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+PUBLIC_SUPABASE_ANON_KEY=<same anon key>
 ```
+
+For browser Realtime subscriptions (F-02), `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` mirror the server values. The anon key is designed to be public; RLS enforces data access.
 
 5. To stop the stack when done:
 
@@ -129,14 +133,18 @@ Tables: `planning_sessions` (single default room), `profiles`, `tasks`, `votes`,
 
 If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
 
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
+| Variable                  | Description                                                |
+| ------------------------- | ---------------------------------------------------------- |
+| `SUPABASE_URL`            | Project URL from Supabase dashboard → Settings → API       |
+| `SUPABASE_KEY`            | `anon` public key from Supabase dashboard → Settings → API |
+| `PUBLIC_SUPABASE_URL`     | Same as `SUPABASE_URL` (browser Realtime)                  |
+| `PUBLIC_SUPABASE_ANON_KEY`| Same as `SUPABASE_KEY` (browser Realtime)                  |
 
 ```
 SUPABASE_URL=https://<project-ref>.supabase.co
 SUPABASE_KEY=<anon-key>
+PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
 ### Email confirmation in local development
@@ -203,7 +211,7 @@ npm run build
 npx wrangler deploy
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
+Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`. For browser Realtime, also set `PUBLIC_SUPABASE_URL` and `PUBLIC_SUPABASE_ANON_KEY` (same values as the server anon credentials).
 
 ## CI
 
