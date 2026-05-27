@@ -57,6 +57,24 @@ export async function getTask(supabase: SessionSupabaseClient, taskId: string) {
   return { data: response.data as Task | null, error: response.error };
 }
 
+export async function getLatestActiveTask(supabase: SessionSupabaseClient) {
+  const sessionResult = await getDefaultSessionId(supabase);
+  if (sessionResult.error) {
+    return { data: null, error: sessionResult.error };
+  }
+
+  const response: { data: unknown; error: PostgrestError | null } = await supabase
+    .from("tasks")
+    .select("*")
+    .eq("session_id", sessionResult.data)
+    .in("status", ["voting", "revealed"])
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return { data: response.data as Task | null, error: response.error };
+}
+
 export async function startVoting(
   supabase: SessionSupabaseClient,
   { taskId, actorId }: { taskId: string; actorId: string },
