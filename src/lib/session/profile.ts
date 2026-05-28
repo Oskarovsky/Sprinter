@@ -1,8 +1,15 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import type { Profile, SessionSupabaseClient } from "./types";
 
-function defaultDisplayName(userId: string): string {
+export function defaultDisplayNameForUser(userId: string): string {
   return `User ${userId.slice(0, 8)}`;
+}
+
+export function isDefaultDisplayName(userId: string, displayName: string | null): boolean {
+  if (!displayName?.trim()) {
+    return true;
+  }
+  return displayName === defaultDisplayNameForUser(userId);
 }
 
 export async function ensureProfile(
@@ -14,7 +21,7 @@ export async function ensureProfile(
     .upsert(
       {
         user_id: userId,
-        display_name: displayName ?? defaultDisplayName(userId),
+        display_name: displayName ?? defaultDisplayNameForUser(userId),
         updated_at: new Date().toISOString(),
       },
       { onConflict: "user_id" },
