@@ -392,11 +392,11 @@ Single-room ~10 users; one refetch per Realtime event (F-02 pattern). Fibonacci 
 
 #### Automated
 
-- [x] 4.1 `npm run lint` passes
-- [x] 4.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 4.3 `npm run build` passes
+- [x] 4.1 `npm run lint` passes — 5db0bfb
+- [x] 4.2 `npm run test:coverage` passes with coverage table printed to stdout — 5db0bfb
+- [x] 4.3 `npm run build` passes — 5db0bfb
 
 #### Manual
 
-- [x] 4.4 Logged-out `/session` redirect; `/support` public
-- [x] 4.5 Dashboard link to `/session` works
+- [x] 4.4 Logged-out `/session` redirect; `/support` public — 5db0bfb
+- [x] 4.5 Dashboard link to `/session` works — 5db0bfb
