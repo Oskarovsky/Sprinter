@@ -1,25 +1,53 @@
 ---
 import Layout from "@/layouts/Layout.astro";
-import SessionLivePanel from "@/components/session/SessionLivePanel";
-import { getLatestActiveTask, listParticipation } from "@/lib/session";
+import SessionRoom from "@/components/session/SessionRoom";
+import {
+  computeHumanAverage,
+  formatHumanAverage,
+  getDisplayName,
+  getLatestActiveTask,
+  isDefaultDisplayName,
+  listParticipation,
+  sortParticipationByPoints,
+} from "@/lib/session";
 import type { Task, VoteParticipation } from "@/lib/session/types";
 import { createClient } from "@/lib/supabase";
 
 const { user } = Astro.locals;
-let initialTaskId: string | null = null;
 let initialTask: Task | null = null;
 let initialParticipation: VoteParticipation[] = [];
+let initialHumanAverageFormatted: string | null = null;
+let initialDisplayName: string | null = null;
+let needsDisplayName = false;
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 if (supabase && user) {
+  const profileResult = await getDisplayName(supabase, user.id);
+  if (!profileResult.error) {
+    initialDisplayName = profileResult.data;
+    needsDisplayName = isDefaultDisplayName(user.id, profileResult.data);
+  } else {
+    needsDisplayName = true;
+  }
+
   const taskResult = await getLatestActiveTask(supabase);
   if (!taskResult.error && taskResult.data) {
-    initialTaskId = taskResult.data.id;
     initialTask = taskResult.data;
 
     const participationResult = await listParticipation(supabase, taskResult.data.id);
     if (!participationResult.error && participationResult.data) {
-      initialParticipation = participationResult.data;
+      initialParticipation =
+        taskResult.data.status === "revealed"
+          ? sortParticipationByPoints(participationResult.data)
+          : participationResult.data;
+
+      if (taskResult.data.status === "revealed") {
+        const points = initialParticipation
+          .map((row) => row.story_points)
+          .filter((value): value is number => value !== null);
+        const average = computeHumanAverage(points);
+        initialHumanAverageFormatted = average !== null ? formatHumanAverage(average) : null;
+      }
     }
   }
 }
@@ -37,16 +65,18 @@ if (supabase && user) {
         Signed in as <span class="font-semibold text-white">{user?.email}</span>
       </p>
       <p class="mt-4 max-w-md text-sm text-blue-100/60">
-        Live sync shows who voted without leaking peer story points before reveal.
+        Create tasks, vote blindly, and reveal the team average when ready.
       </p>
 
       {
         user ? (
-          <SessionLivePanel
-            initialTaskId={initialTaskId}
+          <SessionRoom
             userId={user.id}
+            initialDisplayName={initialDisplayName}
+            needsDisplayName={needsDisplayName}
             initialTask={initialTask}
             initialParticipation={initialParticipation}
+            initialHumanAverageFormatted={initialHumanAverageFormatted}
             client:load
           />
         ) : null
