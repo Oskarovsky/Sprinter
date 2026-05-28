@@ -167,6 +167,20 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/api/auth/google`    | Starts Google OAuth (redirects to Google)                               |
 | `/api/auth/callback`  | OAuth callback — exchanges code for session                             |
 | `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
+| `/session`              | Planning poker room (protected)                                           |
+
+### Session API routes
+
+| Route                                      | Method | Description                                      |
+| ------------------------------------------ | ------ | ------------------------------------------------ |
+| `/api/session/state`                       | GET    | Latest or specified task + masked participation  |
+| `/api/session/participation?taskId=`       | GET    | Masked participation for a task                  |
+| `/api/session/profile`                     | GET    | Current user display name                        |
+| `/api/session/profile`                     | PATCH  | Set display name (`{ displayName }`)             |
+| `/api/session/tasks`                       | POST   | Create task (`{ title, description? }`)          |
+| `/api/session/tasks/:taskId/start-voting`  | POST   | Move task to voting (creator only)               |
+| `/api/session/vote`                        | POST   | Cast/change vote (`{ taskId, storyPoints }`)     |
+| `/api/session/reveal`                      | POST   | Reveal votes (`{ taskId }`, creator only)        |
 
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 

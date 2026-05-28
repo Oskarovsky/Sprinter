@@ -1,34 +1,27 @@
 import type { APIRoute } from "astro";
-import { getLatestActiveTask, getTask, listParticipation } from "@/lib/session";
-import { createClient } from "@/lib/supabase";
-
-function jsonResponse(body: unknown, status: number) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "Content-Type": "application/json" },
-  });
-}
+import {
+  computeHumanAverage,
+  formatHumanAverage,
+  getLatestActiveTask,
+  getTask,
+  listParticipation,
+  sortParticipationByPoints,
+} from "@/lib/session";
+import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 
 export const GET: APIRoute = async (context) => {
-  const supabase = createClient(context.request.headers, context.cookies);
-  if (!supabase) {
-    return jsonResponse({ error: "Supabase is not configured" }, 503);
-  }
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return jsonResponse({ error: "Unauthorized" }, 401);
+  const auth = await requireSessionAuth(context);
+  if ("response" in auth) {
+    return auth.response;
   }
 
   const taskId = context.url.searchParams.get("taskId");
   let taskResult;
 
   if (taskId) {
-    taskResult = await getTask(supabase, taskId);
+    taskResult = await getTask(auth.supabase, taskId);
   } else {
-    taskResult = await getLatestActiveTask(supabase);
+    taskResult = await getLatestActiveTask(auth.supabase);
   }
 
   if (taskResult.error) {
@@ -37,13 +30,24 @@ export const GET: APIRoute = async (context) => {
 
   const task = taskResult.data;
   if (!task) {
-    return jsonResponse({ task: null, participation: [] }, 200);
+    return jsonResponse({ task: null, participation: [], humanAverage: null, humanAverageFormatted: null }, 200);
   }
 
-  const participationResult = await listParticipation(supabase, task.id);
+  const participationResult = await listParticipation(auth.supabase, task.id);
   if (participationResult.error) {
     return jsonResponse({ error: participationResult.error.message }, 500);
   }
 
-  return jsonResponse({ task, participation: participationResult.data ?? [] }, 200);
+  let participation = participationResult.data ?? [];
+  let humanAverage: number | null = null;
+  let humanAverageFormatted: string | null = null;
+
+  if (task.status === "revealed") {
+    participation = sortParticipationByPoints(participation);
+    const points = participation.map((row) => row.story_points).filter((value): value is number => value !== null);
+    humanAverage = computeHumanAverage(points);
+    humanAverageFormatted = humanAverage !== null ? formatHumanAverage(humanAverage) : null;
+  }
+
+  return jsonResponse({ task, participation, humanAverage, humanAverageFormatted }, 200);
 };
