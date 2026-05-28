@@ -364,29 +364,29 @@ Single-room ~10 users; one refetch per Realtime event (F-02 pattern). Fibonacci 
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes on new/edited files
-- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes on new/edited files — d5c95c3
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout — d5c95c3
+- [x] 2.3 `npm run build` passes — d5c95c3
 
 #### Manual
 
-- [x] 2.4 Creator mutation flow via curl/cookie succeeds
-- [x] 2.5 Non-creator reveal returns 403
-- [x] 2.6 GET state after reveal includes correct `humanAverageFormatted`
+- [x] 2.4 Creator mutation flow via curl/cookie succeeds — d5c95c3
+- [x] 2.5 Non-creator reveal returns 403 — d5c95c3
+- [x] 2.6 GET state after reveal includes correct `humanAverageFormatted` — d5c95c3
 
 ### Phase 3: SessionRoom UI
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run build` passes
+- [x] 3.1 `npm run lint` passes — 2ed322b
+- [x] 3.2 `npm run build` passes — 2ed322b
 
 #### Manual
 
-- [x] 3.3 Full US-01 flow via UI without SQL
-- [x] 3.4 Two-browser vote sync ≤3s without peer points
-- [x] 3.5 Two-browser reveal sync ≤3s with average and sorted votes
-- [x] 3.6 Creator-only Reveal enforced in UI and API
+- [x] 3.3 Full US-01 flow via UI without SQL — 2ed322b
+- [x] 3.4 Two-browser vote sync ≤3s without peer points — 2ed322b
+- [x] 3.5 Two-browser reveal sync ≤3s with average and sorted votes — 2ed322b
+- [x] 3.6 Creator-only Reveal enforced in UI and API — 2ed322b
 
 ### Phase 4: Polish, docs, and verification
 
