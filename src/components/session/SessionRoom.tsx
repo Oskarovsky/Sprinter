@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import { FIBONACCI_STORY_POINTS } from "@/lib/session/constants";
-import { subscribeToSessionTask, type SessionRealtimeConnectionStatus } from "@/lib/session/realtime";
+import { connectSessionRoomRealtime, type SessionRealtimeConnectionStatus } from "@/lib/session/realtime";
 import type { Task, VoteParticipation } from "@/lib/session/types";
 
 interface SessionStateResponse {
@@ -18,6 +18,8 @@ interface Props {
   initialTask: Task | null;
   initialParticipation: VoteParticipation[];
   initialHumanAverageFormatted: string | null;
+  realtimeAccessToken: string | null;
+  planningSessionId: string | null;
 }
 
 function formatStoryPoints(points: number | null, isRevealed: boolean): string {
@@ -56,8 +58,8 @@ function connectionClassName(status: SessionRealtimeConnectionStatus): string {
   }
 }
 
-function initialConnectionStatus(task: Task | null): SessionRealtimeConnectionStatus {
-  if (!task || task.status === "draft") {
+function initialConnectionStatus(planningSessionId: string | null): SessionRealtimeConnectionStatus {
+  if (!planningSessionId) {
     return "unconfigured";
   }
   return createBrowserClient() ? "connecting" : "unconfigured";
@@ -75,6 +77,8 @@ export default function SessionRoom({
   initialTask,
   initialParticipation,
   initialHumanAverageFormatted,
+  realtimeAccessToken,
+  planningSessionId,
 }: Props) {
   const [needsDisplayName, setNeedsDisplayName] = useState(initialNeedsDisplayName);
   const [displayNameInput, setDisplayNameInput] = useState(initialDisplayName ?? "");
@@ -82,7 +86,7 @@ export default function SessionRoom({
   const [participation, setParticipation] = useState<VoteParticipation[]>(initialParticipation);
   const [humanAverageFormatted, setHumanAverageFormatted] = useState<string | null>(initialHumanAverageFormatted);
   const [connectionStatus, setConnectionStatus] = useState<SessionRealtimeConnectionStatus>(() =>
-    initialConnectionStatus(initialTask),
+    initialConnectionStatus(planningSessionId),
   );
   const [bannerError, setBannerError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,7 +99,7 @@ export default function SessionRoom({
   const isVoting = task?.status === "voting";
   const isDraft = task?.status === "draft";
   const ownVote = participation.find((row) => row.user_id === userId)?.story_points ?? null;
-  const liveTaskId = task && (task.status === "voting" || task.status === "revealed") ? task.id : null;
+  const showLiveBadge = Boolean(planningSessionId);
 
   const refetchState = useCallback(async (taskId?: string) => {
     const query = taskId ? `?taskId=${encodeURIComponent(taskId)}` : "";
@@ -113,7 +117,7 @@ export default function SessionRoom({
   }, []);
 
   useEffect(() => {
-    if (!liveTaskId) {
+    if (!planningSessionId || needsDisplayName) {
       return;
     }
 
@@ -122,15 +126,33 @@ export default function SessionRoom({
       return;
     }
 
-    return subscribeToSessionTask(
+    let cleanup: (() => void) | undefined;
+    let cancelled = false;
+
+    void connectSessionRoomRealtime(
       supabase,
-      liveTaskId,
+      planningSessionId,
       () => {
-        void refetchState(liveTaskId);
+        void refetchState();
       },
-      setConnectionStatus,
-    );
-  }, [liveTaskId, refetchState]);
+      {
+        accessToken: realtimeAccessToken,
+        onStatusChange: setConnectionStatus,
+      },
+    ).then((disconnect) => {
+      if (cancelled) {
+        disconnect?.();
+        return;
+      }
+
+      cleanup = disconnect ?? undefined;
+    });
+
+    return () => {
+      cancelled = true;
+      cleanup?.();
+    };
+  }, [planningSessionId, needsDisplayName, realtimeAccessToken, refetchState]);
 
   async function saveDisplayName(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -170,7 +192,6 @@ export default function SessionRoom({
       setTask(data.task);
       setParticipation([]);
       setHumanAverageFormatted(null);
-      setConnectionStatus("unconfigured");
       setNewTitle("");
       setNewDescription("");
     } finally {
@@ -192,7 +213,6 @@ export default function SessionRoom({
       }
       const data = (await response.json()) as { task: Task };
       setTask(data.task);
-      setConnectionStatus(createBrowserClient() ? "connecting" : "unconfigured");
     } finally {
       setIsSubmitting(false);
     }
@@ -291,7 +311,7 @@ export default function SessionRoom({
           </h2>
           {task ? <p className="mt-1 text-sm text-blue-100/80">{task.title}</p> : null}
         </div>
-        {liveTaskId ? (
+        {showLiveBadge ? (
           <span
             className={`rounded-full border px-3 py-1 text-xs font-medium ${connectionClassName(connectionStatus)}`}
             role="status"

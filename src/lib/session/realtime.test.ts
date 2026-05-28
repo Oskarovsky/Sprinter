@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { channelNameForTask, shouldRefetchOnTaskEvent, shouldRefetchOnVoteEvent } from "./realtime";
+import { channelNameForSession, shouldRefetchOnTaskEvent, shouldRefetchOnVoteEvent } from "./realtime";
 
-describe("channelNameForTask", () => {
-  it("returns a stable channel name scoped to the task id", () => {
-    const taskId = "0099c166-56b9-46fb-ab95-b4c638254e9a";
-    expect(channelNameForTask(taskId)).toBe(`session-task:${taskId}`);
+describe("channelNameForSession", () => {
+  it("returns a stable channel name scoped to the planning session id", () => {
+    const sessionId = "0099c166-56b9-46fb-ab95-b4c638254e9a";
+    expect(channelNameForSession(sessionId)).toBe(`planning-session:${sessionId}`);
   });
 });
 
@@ -23,13 +23,23 @@ describe("shouldRefetchOnTaskEvent", () => {
     expect(
       shouldRefetchOnTaskEvent({
         eventType: "UPDATE",
+        new: { status: "voting" },
+      }),
+    ).toBe(true);
+  });
+
+  it("refetches on task reveal update", () => {
+    expect(
+      shouldRefetchOnTaskEvent({
+        eventType: "UPDATE",
         new: { status: "revealed" },
         old: { status: "voting" },
       }),
     ).toBe(true);
   });
 
-  it("ignores non-update task events", () => {
+  it("ignores insert and delete task events", () => {
     expect(shouldRefetchOnTaskEvent({ eventType: "INSERT" })).toBe(false);
+    expect(shouldRefetchOnTaskEvent({ eventType: "DELETE" })).toBe(false);
   });
 });
