@@ -4,6 +4,7 @@ import SessionRoom from "@/components/session/SessionRoom";
 import {
   computeHumanAverage,
   formatHumanAverage,
+  getDefaultSessionId,
   getDisplayName,
   getLatestActiveTask,
   isDefaultDisplayName,
@@ -19,9 +20,17 @@ let initialParticipation: VoteParticipation[] = [];
 let initialHumanAverageFormatted: string | null = null;
 let initialDisplayName: string | null = null;
 let needsDisplayName = false;
+let realtimeAccessToken: string | null = null;
+let planningSessionId: string | null = null;
 
 const supabase = createClient(Astro.request.headers, Astro.cookies);
 if (supabase && user) {
+  const sessionResult = await supabase.auth.getSession();
+  realtimeAccessToken = sessionResult.data.session?.access_token ?? null;
+
+  const defaultSessionResult = await getDefaultSessionId(supabase);
+  planningSessionId = defaultSessionResult.data;
+
   const profileResult = await getDisplayName(supabase, user.id);
   if (!profileResult.error) {
     initialDisplayName = profileResult.data;
@@ -77,6 +86,8 @@ if (supabase && user) {
             initialTask={initialTask}
             initialParticipation={initialParticipation}
             initialHumanAverageFormatted={initialHumanAverageFormatted}
+            realtimeAccessToken={realtimeAccessToken}
+            planningSessionId={planningSessionId}
             client:load
           />
         ) : null

@@ -1,4 +1,5 @@
 import type { RealtimeChannel, SupabaseClient } from "@supabase/supabase-js";
+import { ensureRealtimeAuth, watchRealtimeAuth } from "./realtime-auth";
 
 export type SessionRealtimeConnectionStatus = "connecting" | "connected" | "disconnected" | "error" | "unconfigured";
 
@@ -8,8 +9,8 @@ export interface PostgresChangePayload {
   old?: Record<string, unknown>;
 }
 
-export function channelNameForTask(taskId: string): string {
-  return `session-task:${taskId}`;
+export function channelNameForSession(sessionId: string): string {
+  return `planning-session:${sessionId}`;
 }
 
 export function shouldRefetchOnVoteEvent(payload: PostgresChangePayload): boolean {
@@ -34,26 +35,17 @@ function mapChannelStatus(status: string): SessionRealtimeConnectionStatus {
   }
 }
 
-export function subscribeToSessionTask(
+export function subscribeToSessionRoom(
   supabase: SupabaseClient,
-  taskId: string,
+  sessionId: string,
   onRefetch: () => void,
   onStatusChange?: (status: SessionRealtimeConnectionStatus) => void,
 ): () => void {
   const channel: RealtimeChannel = supabase
-    .channel(channelNameForTask(taskId))
+    .channel(channelNameForSession(sessionId))
     .on(
       "postgres_changes",
-      { event: "*", schema: "public", table: "votes", filter: `task_id=eq.${taskId}` },
-      (payload) => {
-        if (shouldRefetchOnVoteEvent({ eventType: payload.eventType })) {
-          onRefetch();
-        }
-      },
-    )
-    .on(
-      "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "tasks", filter: `id=eq.${taskId}` },
+      { event: "UPDATE", schema: "public", table: "tasks", filter: `session_id=eq.${sessionId}` },
       (payload) => {
         if (shouldRefetchOnTaskEvent({ eventType: payload.eventType })) {
           onRefetch();
@@ -66,5 +58,31 @@ export function subscribeToSessionTask(
 
   return () => {
     void supabase.removeChannel(channel);
+  };
+}
+
+export async function connectSessionRoomRealtime(
+  supabase: SupabaseClient,
+  sessionId: string,
+  onRefetch: () => void,
+  options?: {
+    accessToken?: string | null;
+    onStatusChange?: (status: SessionRealtimeConnectionStatus) => void;
+  },
+): Promise<(() => void) | null> {
+  const authed = await ensureRealtimeAuth(supabase, options?.accessToken);
+  if (!authed) {
+    options?.onStatusChange?.("error");
+    return null;
+  }
+
+  const stopAuthWatch = watchRealtimeAuth(supabase, () => {
+    options?.onStatusChange?.("error");
+  });
+  const stopChannel = subscribeToSessionRoom(supabase, sessionId, onRefetch, options?.onStatusChange);
+
+  return () => {
+    stopAuthWatch();
+    stopChannel();
   };
 }
