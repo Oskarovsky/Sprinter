@@ -1,0 +1,1 @@
+  UPDATE public.tasks SET status = 'revealed', revealed_at = now() WHERE title = 'Smoke test task';
