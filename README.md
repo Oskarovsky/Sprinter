@@ -182,6 +182,13 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/api/session/vote`                        | POST   | Cast/change vote (`{ taskId, storyPoints }`)     |
 | `/api/session/reveal`                      | POST   | Reveal votes (`{ taskId }`, creator only)        |
 
+### AI API routes
+
+| Route                | Method | Description                                                                 |
+| -------------------- | ------ | --------------------------------------------------------------------------- |
+| `/api/ai/draft`      | POST   | Generate task drafts from notes (`{ notes }`) — auth required               |
+| `/api/ai/coach`      | POST   | Discussion prompts for divergent votes (`{ taskTitle, taskDescription?, votes }`) — auth required |
+
 Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
 
 ### Google OAuth (FR-012)
