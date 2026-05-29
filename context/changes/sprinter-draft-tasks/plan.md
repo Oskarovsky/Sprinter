@@ -249,12 +249,12 @@ Wire Sprinter Draft panel into the planning session page above the create form.
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes — 795749b
+- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout — 795749b
+- [x] 3.3 `npm run build` passes — 795749b
 
 #### Manual
 
-- [x] 3.4 Full flow: generate → Use this task → Create task on `/session`
-- [x] 3.5 Draft panel hidden during voting; visible after reveal for next task
-- [x] 3.6 Fallback warning shown when AI unavailable; drafts still usable
+- [x] 3.4 Full flow: generate → Use this task → Create task on `/session` — 795749b
+- [x] 3.5 Draft panel hidden during voting; visible after reveal for next task — 795749b
+- [x] 3.6 Fallback warning shown when AI unavailable; drafts still usable — 795749b
