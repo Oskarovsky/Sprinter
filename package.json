@@ -4,6 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
+    "dev:clean": "rm -rf node_modules/.vite .astro dist .wrangler/tmp node_modules/.cache/wrangler && astro dev",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
