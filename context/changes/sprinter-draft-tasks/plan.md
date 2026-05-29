@@ -238,23 +238,23 @@ Wire Sprinter Draft panel into the planning session page above the create form.
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run build` passes
+- [x] 2.1 `npm run lint` passes — 2820302
+- [x] 2.2 `npm run build` passes — 2820302
 
 #### Manual
 
-- [x] 2.3 Panel UI matches SessionRoom styling (visual check on `/session` or component mount)
+- [x] 2.3 Panel UI matches SessionRoom styling (visual check on `/session` or component mount) — 2820302
 
 ### Phase 3: SessionRoom integration
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 3.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 3.4 Full flow: generate → Use this task → Create task on `/session`
-- [ ] 3.5 Draft panel hidden during voting; visible after reveal for next task
-- [ ] 3.6 Fallback warning shown when AI unavailable; drafts still usable
+- [x] 3.4 Full flow: generate → Use this task → Create task on `/session`
+- [x] 3.5 Draft panel hidden during voting; visible after reveal for next task
+- [x] 3.6 Fallback warning shown when AI unavailable; drafts still usable
