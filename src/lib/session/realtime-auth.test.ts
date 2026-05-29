@@ -45,6 +45,13 @@ describe("ensureRealtimeAuth", () => {
 
     expect(setAuth).not.toHaveBeenCalled();
   });
+
+  it("returns false when setAuth rejects", async () => {
+    const { supabase, setAuth } = createSupabaseMock("session-token");
+    setAuth.mockRejectedValue(new Error("setAuth failed"));
+
+    await expect(ensureRealtimeAuth(supabase)).resolves.toBe(false);
+  });
 });
 
 describe("watchRealtimeAuth", () => {

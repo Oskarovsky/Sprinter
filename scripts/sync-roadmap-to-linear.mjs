@@ -26,9 +26,7 @@ const LABELS = ["foundation", "slice", "north-star"];
 async function gql(query, variables = {}) {
   const key = process.env.LINEAR_API_KEY;
   if (!key) {
-    throw new Error(
-      "Missing LINEAR_API_KEY. Create one at Linear → Settings → Security & access.",
-    );
+    throw new Error("Missing LINEAR_API_KEY. Create one at Linear → Settings → Security & access.");
   }
 
   const res = await fetch(API_URL, {
@@ -119,15 +117,10 @@ async function getTeamId() {
   const hint = process.env.LINEAR_TEAM?.trim();
   if (hint) {
     const team = teams.find(
-      (t) =>
-        t.id === hint ||
-        t.key.toLowerCase() === hint.toLowerCase() ||
-        t.name.toLowerCase() === hint.toLowerCase(),
+      (t) => t.id === hint || t.key.toLowerCase() === hint.toLowerCase() || t.name.toLowerCase() === hint.toLowerCase(),
     );
     if (!team) {
-      throw new Error(
-        `LINEAR_TEAM "${hint}" not found. Available: ${teams.map((t) => t.key).join(", ")}`,
-      );
+      throw new Error(`LINEAR_TEAM "${hint}" not found. Available: ${teams.map((t) => t.key).join(", ")}`);
     }
     return team;
   }
