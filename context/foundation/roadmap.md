@@ -33,7 +33,7 @@ During Scrum work in a company dev team, there is no web tool that unifies popul
 | F-02 | live-session-sync | (foundation) broadcast who-voted and reveal updates within NFR latency | F-01 | FR-007, FR-008, FR-010 | done |
 | F-03 | ai-provider-fallback | (foundation) call server-side AI when configured; deterministic fallback otherwise | — | FR-016 | done |
 | S-01 | blind-planning-poker | run a full blind planning-poker vote and see the human average after reveal | F-01, F-02 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012 | done |
-| S-02 | sprinter-draft-tasks | paste raw notes and apply AI-generated task drafts to the creation form | S-01, F-03 | US-02, FR-013, FR-014, FR-016 | proposed |
+| S-02 | sprinter-draft-tasks | paste raw notes and apply AI-generated task drafts to the creation form | S-01, F-03 | US-02, FR-013, FR-014, FR-016 | done |
 | S-03 | sprinter-coach-prompts | request discussion prompts after reveal when votes diverge | S-01, F-03 | US-03, FR-015, FR-016 | proposed |
 | S-04 | sprinter-analyst-vote | link a repo and see a reference-only Analyst story-point vote after reveal | S-01, F-01 | US-04, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023 | blocked |
 
@@ -125,7 +125,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 - **Blockers:** —
 - **Unknowns:** —
 - **Risk:** Sequenced after north star per speed goal; Draft is prep aid, not core hypothesis proof.
-- **Status:** proposed
+- **Status:** done
 
 ### S-03: Sprinter Coach discussion prompts
 
@@ -186,6 +186,7 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ## Done
 
+- **S-02: user can paste raw notes on the planning session page, receive proposed planning-poker-ready tasks, and apply a chosen draft to the task creation form without auto-submitting.** — Archived 2026-05-29 → `context/archive/2026-05-29-sprinter-draft-tasks/`. Lesson: —.
 - **F-03: (foundation) server-side AI calls succeed when configured; deterministic fallback returns the same response shape when AI is unavailable.** — Archived 2026-05-29 → `context/archive/2026-05-29-ai-provider-fallback/`. Lesson: —.
 - **S-01: user can register or log in, join the shared session, create a task, vote blindly, reveal votes, and see each participant's human vote plus the calculated human average.** — Archived 2026-05-28 → `context/archive/2026-05-28-s-01/`. Lesson: —.
 - **F-02: (foundation) who-voted indicators and reveal outcomes propagate to all session participants within NFR latency.** — Archived 2026-05-27 → `context/archive/2026-05-27-live-session-sync/`. Lesson: —.
