@@ -33,10 +33,7 @@ function loadDotEnv() {
       const key = trimmed.slice(0, eq);
       if (process.env[key]) continue;
       let val = trimmed.slice(eq + 1);
-      if (
-        (val.startsWith('"') && val.endsWith('"')) ||
-        (val.startsWith("'") && val.endsWith("'"))
-      ) {
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
         val = val.slice(1, -1);
       }
       process.env[key] = val;
@@ -95,7 +92,7 @@ function getAuthToken() {
   return process.env.GH_TOKEN || process.env.GITHUB_TOKEN || "";
 }
 
-function graphqlRequest(query, variables = {}) {
+function _graphqlRequest(query, variables = {}) {
   const token = getAuthToken();
   if (!token) {
     return Promise.resolve(ghGraphql(query, variables));
@@ -170,7 +167,10 @@ function parseRoadmap(content) {
     if (heading !== "Foundations" && heading !== "Slices") continue;
 
     for (const block of section.split(/^### /m).slice(1)) {
-      const id = block.split("\n")[0].trim().match(/^(F|S)-\d+/)?.[0];
+      const id = block
+        .split("\n")[0]
+        .trim()
+        .match(/^(F|S)-\d+/)?.[0];
       if (!id) continue;
 
       const field = (name) => {
@@ -261,9 +261,12 @@ function buildDescription(item) {
 }
 
 function listExistingIssues(repo) {
-  const issues = runGh(["issue", "list", "-R", repo, "-L", "100", "--state", "all", "--json", "id,number,title,url,body"], {
-    json: true,
-  });
+  const issues = runGh(
+    ["issue", "list", "-R", repo, "-L", "100", "--state", "all", "--json", "id,number,title,url,body"],
+    {
+      json: true,
+    },
+  );
   /** @type {Record<string, { id: string, number: number, url: string }>} */
   const map = {};
   for (const issue of issues) {
@@ -489,10 +492,7 @@ async function main() {
   }
 
   try {
-    await ensureProject(
-      repo,
-      items.map((i) => created[i.id]?.id).filter(Boolean),
-    );
+    await ensureProject(repo, items.map((i) => created[i.id]?.id).filter(Boolean));
   } catch (err) {
     console.warn(`Project step skipped: ${err.message}`);
   }
