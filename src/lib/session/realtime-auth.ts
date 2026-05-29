@@ -6,8 +6,12 @@ export async function ensureRealtimeAuth(supabase: SupabaseClient, accessToken?:
     return false;
   }
 
-  await supabase.realtime.setAuth(token);
-  return true;
+  try {
+    await supabase.realtime.setAuth(token);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export function watchRealtimeAuth(supabase: SupabaseClient, onMissingSession?: () => void): () => void {

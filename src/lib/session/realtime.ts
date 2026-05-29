@@ -76,10 +76,11 @@ export async function connectSessionRoomRealtime(
     return null;
   }
 
+  const stopChannel = subscribeToSessionRoom(supabase, sessionId, onRefetch, options?.onStatusChange);
   const stopAuthWatch = watchRealtimeAuth(supabase, () => {
     options?.onStatusChange?.("error");
+    stopChannel();
   });
-  const stopChannel = subscribeToSessionRoom(supabase, sessionId, onRefetch, options?.onStatusChange);
 
   return () => {
     stopAuthWatch();
