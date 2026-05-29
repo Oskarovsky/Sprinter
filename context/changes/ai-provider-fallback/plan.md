@@ -330,24 +330,24 @@ Expose Draft and Coach generation over HTTP for S-02/S-03 and manual verificatio
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes on new files
-- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes on new files — 4d96fca
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout — 4d96fca
+- [x] 2.3 `npm run build` passes — 4d96fca
 
 #### Manual
 
-- [x] 2.4 Unconfigured `generateDraftFromNotes` returns fallback drafts from sample notes
+- [x] 2.4 Unconfigured `generateDraftFromNotes` returns fallback drafts from sample notes — 4d96fca
 
 ### Phase 3: Authenticated API routes
 
 #### Automated
 
-- [ ] 3.1 `npm run lint` passes
-- [ ] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes
+- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 3.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 3.4 Authenticated draft POST returns fallback when key unset
-- [ ] 3.5 Coach POST returns 400 for non-divergent votes; 200 with questions when divergent
-- [ ] 3.6 With valid OpenRouter key, draft POST returns `source: "ai"` (manual)
+- [x] 3.4 Authenticated draft POST returns fallback when key unset
+- [x] 3.5 Coach POST returns 400 for non-divergent votes; 200 with questions when divergent
+- [x] 3.6 With valid OpenRouter key, draft POST returns `source: "ai"` (manual)
