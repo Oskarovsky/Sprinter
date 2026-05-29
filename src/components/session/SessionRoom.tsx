@@ -3,6 +3,7 @@ import { createBrowserClient } from "@/lib/supabase-browser";
 import { FIBONACCI_STORY_POINTS } from "@/lib/session/constants";
 import { connectSessionRoomRealtime, type SessionRealtimeConnectionStatus } from "@/lib/session/realtime";
 import type { Task, VoteParticipation } from "@/lib/session/types";
+import SprinterDraftPanel from "@/components/session/SprinterDraftPanel";
 
 interface SessionStateResponse {
   task: Task | null;
@@ -333,39 +334,48 @@ export default function SessionRoom({
       ) : null}
 
       {showCreateForm ? (
-        <form onSubmit={createTask} className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-6">
-          <h3 className="text-sm font-medium text-white">{isRevealed ? "Start next task" : "Create a task"}</h3>
-          <label className="block text-sm text-blue-100/90">
-            Title
-            <input
-              type="text"
-              value={newTitle}
-              onChange={(e) => {
-                setNewTitle(e.target.value);
-              }}
-              required
-              className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
-            />
-          </label>
-          <label className="block text-sm text-blue-100/90">
-            Description (optional)
-            <textarea
-              value={newDescription}
-              onChange={(e) => {
-                setNewDescription(e.target.value);
-              }}
-              rows={2}
-              className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500/30 disabled:opacity-50"
-          >
-            Create task
-          </button>
-        </form>
+        <>
+          <SprinterDraftPanel
+            onApplyDraft={({ title, description }) => {
+              setNewTitle(title);
+              setNewDescription(description);
+              setBannerError(null);
+            }}
+          />
+          <form onSubmit={createTask} className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-6">
+            <h3 className="text-sm font-medium text-white">{isRevealed ? "Start next task" : "Create a task"}</h3>
+            <label className="block text-sm text-blue-100/90">
+              Title
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => {
+                  setNewTitle(e.target.value);
+                }}
+                required
+                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+              />
+            </label>
+            <label className="block text-sm text-blue-100/90">
+              Description (optional)
+              <textarea
+                value={newDescription}
+                onChange={(e) => {
+                  setNewDescription(e.target.value);
+                }}
+                rows={2}
+                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500/30 disabled:opacity-50"
+            >
+              Create task
+            </button>
+          </form>
+        </>
       ) : null}
 
       {task && isDraft && isCreator ? (
