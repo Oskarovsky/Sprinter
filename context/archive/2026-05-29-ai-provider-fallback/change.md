@@ -1,10 +1,10 @@
 ---
 change_id: ai-provider-fallback
 title: Ai provider fallback
-status: implemented
+status: archived
 created: 2026-05-29
 updated: 2026-05-29
-archived_at: null
+archived_at: 2026-05-29T20:12:32Z
 ---
 
 ## Notes
