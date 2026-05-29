@@ -227,23 +227,23 @@ Wire Sprinter Draft panel into the planning session page above the create form.
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes on new files
-- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 1.1 `npm run lint` passes on new files — 2b1104a
+- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout — 2b1104a
 
 #### Manual
 
-- [x] 1.3 `formatDraftForForm` produces expected markdown for sample draft with AC and questions
+- [x] 1.3 `formatDraftForForm` produces expected markdown for sample draft with AC and questions — 2b1104a
 
 ### Phase 2: SprinterDraftPanel component
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run build` passes
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run build` passes
 
 #### Manual
 
-- [ ] 2.3 Panel UI matches SessionRoom styling (visual check on `/session` or component mount)
+- [x] 2.3 Panel UI matches SessionRoom styling (visual check on `/session` or component mount)
 
 ### Phase 3: SessionRoom integration
 
