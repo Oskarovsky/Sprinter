@@ -342,12 +342,12 @@ Expose Draft and Coach generation over HTTP for S-02/S-03 and manual verificatio
 
 #### Automated
 
-- [x] 3.1 `npm run lint` passes
-- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 3.3 `npm run build` passes
+- [x] 3.1 `npm run lint` passes — f0f78ea
+- [x] 3.2 `npm run test:coverage` passes with coverage table printed to stdout — f0f78ea
+- [x] 3.3 `npm run build` passes — f0f78ea
 
 #### Manual
 
-- [x] 3.4 Authenticated draft POST returns fallback when key unset
-- [x] 3.5 Coach POST returns 400 for non-divergent votes; 200 with questions when divergent
-- [x] 3.6 With valid OpenRouter key, draft POST returns `source: "ai"` (manual)
+- [x] 3.4 Authenticated draft POST returns fallback when key unset — f0f78ea
+- [x] 3.5 Coach POST returns 400 for non-divergent votes; 200 with questions when divergent — f0f78ea
+- [x] 3.6 With valid OpenRouter key, draft POST returns `source: "ai"` (manual) — f0f78ea
