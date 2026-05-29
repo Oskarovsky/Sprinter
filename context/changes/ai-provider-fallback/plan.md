@@ -318,25 +318,25 @@ Expose Draft and Coach generation over HTTP for S-02/S-03 and manual verificatio
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run build` passes
+- [x] 1.1 `npm run lint` passes — 20bba91
+- [x] 1.2 `npm run build` passes — 20bba91
 
 #### Manual
 
-- [x] 1.3 App starts with `npm run dev` when `OPENROUTER_API_KEY` is unset
-- [x] 1.4 `configStatuses` shows OpenRouter as unconfigured when key absent
+- [x] 1.3 App starts with `npm run dev` when `OPENROUTER_API_KEY` is unset — 20bba91
+- [x] 1.4 `configStatuses` shows OpenRouter as unconfigured when key absent — 20bba91
 
 ### Phase 2: AI library layer
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes on new files
-- [ ] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 2.3 `npm run build` passes
+- [x] 2.1 `npm run lint` passes on new files
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 2.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 2.4 Unconfigured `generateDraftFromNotes` returns fallback drafts from sample notes
+- [x] 2.4 Unconfigured `generateDraftFromNotes` returns fallback drafts from sample notes
 
 ### Phase 3: Authenticated API routes
 
