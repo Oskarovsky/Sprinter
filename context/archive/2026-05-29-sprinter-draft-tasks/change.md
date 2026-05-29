@@ -1,10 +1,10 @@
 ---
 change_id: sprinter-draft-tasks
 title: Sprinter draft tasks
-status: implemented
+status: archived
 created: 2026-05-29
 updated: 2026-05-29
-archived_at: null
+archived_at: 2026-05-29T20:32:06Z
 ---
 
 ## Notes
