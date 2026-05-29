@@ -139,14 +139,18 @@ export default function SessionRoom({
         accessToken: realtimeAccessToken,
         onStatusChange: setConnectionStatus,
       },
-    ).then((disconnect) => {
-      if (cancelled) {
-        disconnect?.();
-        return;
-      }
+    )
+      .then((disconnect) => {
+        if (cancelled) {
+          disconnect?.();
+          return;
+        }
 
-      cleanup = disconnect ?? undefined;
-    });
+        cleanup = disconnect ?? undefined;
+      })
+      .catch(() => {
+        setConnectionStatus("error");
+      });
 
     return () => {
       cancelled = true;

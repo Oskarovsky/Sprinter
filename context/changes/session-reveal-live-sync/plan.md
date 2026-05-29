@@ -23,7 +23,8 @@ Hotfix for peer browsers not auto-updating when the task creator reveals votes. 
 
 - New roadmap slice
 - Broadcast / polling fallback
-- DB migration or RLS policy changes (reveal path uses `tasks` SELECT for all authenticated users)
+- RLS policy changes (reveal path uses `tasks` SELECT for all authenticated users)
+- Migrations beyond `20260528100000_votes_touch_task_for_realtime.sql` (vote→task `updated_at` bump for Realtime only)
 
 ## Phase 1: Realtime auth before subscribe
 
@@ -41,13 +42,13 @@ Hotfix for peer browsers not auto-updating when the task creator reveals votes. 
 
 **File**: `src/lib/session/realtime.ts`
 
-**Intent**: Export async `connectSessionTaskRealtime` that awaits auth, registers `onAuthStateChange` for `TOKEN_REFRESHED`, then subscribes.
+**Intent**: Export async `connectSessionRoomRealtime` that awaits auth, registers `watchRealtimeAuth` (refreshes `setAuth` on auth state changes), then subscribes to session-scoped `tasks` UPDATE (`planning-session:{sessionId}` filter by `session_id`).
 
 #### 3. SessionRoom + session.astro
 
 **Files**: `src/components/session/SessionRoom.tsx`, `src/pages/session.astro`
 
-**Intent**: Pass `realtimeAccessToken` from server `getSession()`; use async connect in `useEffect`; set connection error when auth missing.
+**Intent**: Pass `realtimeAccessToken` and `planningSessionId` from server; use async `connectSessionRoomRealtime` in `useEffect`; set connection error when auth missing.
 
 #### 4. Tests
 
@@ -66,6 +67,36 @@ Hotfix for peer browsers not auto-updating when the task creator reveals votes. 
 - Two browsers, two users: after creator Reveal, peer UI updates without refresh (points + average)
 - Peer Network tab shows `GET /api/session/state` triggered without manual refresh
 - Badge remains **Live** during voting and after reveal
+
+## Phase 2: Vote + new-round live sync
+
+### Changes Required
+
+#### 1. Vote→task Realtime bump
+
+**File**: `supabase/migrations/20260528100000_votes_touch_task_for_realtime.sql`
+
+**Intent**: AFTER INSERT/UPDATE/DELETE on `votes`, trigger bumps parent `tasks.updated_at` so peers receive `tasks` UPDATE (votes RLS hides peer rows pre-reveal).
+
+#### 2. Session-scoped subscribe (same files as Phase 1)
+
+**Files**: `src/lib/session/realtime.ts`, `src/components/session/SessionRoom.tsx`, `src/pages/session.astro`
+
+**Intent**: Subscribe by `planningSessionId` (not per-task id) so vote bumps and new voting rounds refetch `/api/session/state` for all peers.
+
+### Success Criteria
+
+#### Automated Verification
+
+- `npm run lint` passes
+- `npm run test:coverage` passes with coverage table printed
+- `npm run build` passes
+- Migration `20260528100000_votes_touch_task_for_realtime.sql` applies cleanly
+
+#### Manual Verification
+
+- Two browsers: A votes → B sees A in who-voted without refresh
+- Two browsers: A creates task + starts voting → B sees new voting UI without refresh
 
 ## Progress
 

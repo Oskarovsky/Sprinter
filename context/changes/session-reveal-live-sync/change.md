@@ -1,9 +1,9 @@
 ---
 change_id: session-reveal-live-sync
 title: Fix live reveal sync for peer session participants
-status: implemented
+status: impl_reviewed
 created: 2026-05-28
-updated: 2026-05-28
+updated: 2026-05-29
 archived_at: null
 ---
 
