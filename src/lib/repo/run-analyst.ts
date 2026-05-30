@@ -115,11 +115,19 @@ export async function runAnalystForTask({ taskId, sessionId, serviceClient }: Ru
     }
 
     const selectedPaths = selectFilesForTask(tree, task);
+    const blobShaByPath = new Map(
+      tree.filter((entry) => entry.type === "blob").map((entry) => [entry.path, entry.sha]),
+    );
     const files = await fetchFileContents(
       connection,
       selectedPaths,
       { maxFiles: MAX_ANALYST_FILES, maxBytes: MAX_ANALYST_BYTES },
       { accessToken: token?.access_token ?? null, gitlabPat: token?.gitlab_pat ?? false },
+      {
+        serviceClient,
+        connectionId: connection.id,
+        blobShaByPath,
+      },
     );
 
     const analystResult = await generateAnalystVote({
