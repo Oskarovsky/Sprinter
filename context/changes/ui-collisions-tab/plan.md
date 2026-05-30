@@ -193,24 +193,24 @@ None — client-only UI change.
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 1.3 `npm run build` succeeds
+- [x] 1.1 `npm run lint` passes — c755c37
+- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout — c755c37
+- [x] 1.3 `npm run build` succeeds — c755c37
 
 #### Manual
 
-- [x] 1.4 Create tab default; Draft hidden until tab click; state preserved across tab switches
-- [x] 1.5 After reveal, “Start next task” defaults to Create tab
+- [x] 1.4 Create tab default; Draft hidden until tab click; state preserved across tab switches — c755c37
+- [x] 1.5 After reveal, “Start next task” defaults to Create tab — c755c37
 
 ### Phase 2: Apply flow polish and verification
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 2.3 `npm run build` succeeds
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 2.3 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 2.4 Use this task switches to Create tab with prefilled fields
-- [ ] 2.5 US-02 privacy + poker regression smoke (two-browser optional)
+- [x] 2.4 Use this task switches to Create tab with prefilled fields
+- [x] 2.5 US-02 privacy + poker regression smoke (two-browser optional)

@@ -571,6 +571,7 @@ export default function SessionRoom({
                 setNewTitle(title);
                 setNewDescription(description);
                 setBannerError(null);
+                setCreateTaskTab("manual");
               }}
             />
           </div>
