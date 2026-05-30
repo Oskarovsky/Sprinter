@@ -474,9 +474,9 @@ End-to-end wiring, script updates, README notes, full manual QA matrix.
 
 #### Automated
 
-- [x] 4.1 `npm run lint` passes
-- [x] 4.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 4.3 `npm run build` succeeds
+- [x] 4.1 `npm run lint` passes — bc1eb88
+- [x] 4.2 `npm run test:coverage` passes with coverage table printed to stdout — bc1eb88
+- [x] 4.3 `npm run build` succeeds — bc1eb88
 
 #### Manual
 
@@ -487,9 +487,9 @@ End-to-end wiring, script updates, README notes, full manual QA matrix.
 
 #### Automated
 
-- [ ] 5.1 `npm run lint` passes
-- [ ] 5.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 5.3 `npm run build` succeeds
+- [x] 5.1 `npm run lint` passes
+- [x] 5.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 5.3 `npm run build` succeeds
 
 #### Manual
 
