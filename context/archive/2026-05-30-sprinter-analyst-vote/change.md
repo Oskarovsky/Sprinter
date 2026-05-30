@@ -1,9 +1,10 @@
 ---
 change_id: sprinter-analyst-vote
 title: Sprinter Analyst reference vote
-status: ready-to-merge
+status: archived
 created: 2026-05-30
 updated: 2026-05-30
+archived_at: 2026-05-30T07:35:01Z
 ---
 
 ## Notes
