@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MAX_ANALYST_BYTES } from "./fetch-files";
+import { MAX_FILE_CONTENT_CHARS } from "./content-limits";
 import type { FacilitatorRepoConnection } from "./types";
 
 const githubConnection: FacilitatorRepoConnection = {
@@ -25,17 +25,19 @@ describe("fetchFileContents", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation(async () => {
-        const payload = "x".repeat(600_000);
+        const payload = "x".repeat(MAX_FILE_CONTENT_CHARS);
         return new Response(JSON.stringify({ content: btoa(payload), encoding: "base64" }), { status: 200 });
       }),
     );
 
     const { fetchFileContents } = await import("./fetch-files");
-    const files = await fetchFileContents(githubConnection, ["a.ts", "b.ts", "c.ts"], { maxBytes: MAX_ANALYST_BYTES });
+    const files = await fetchFileContents(githubConnection, ["a.ts", "b.ts", "c.ts", "d.ts"], {
+      maxBytes: 30_000,
+    });
 
     expect(files.length).toBeLessThanOrEqual(2);
     expect(files.reduce((sum, file) => sum + new TextEncoder().encode(file.content).byteLength, 0)).toBeLessThanOrEqual(
-      MAX_ANALYST_BYTES,
+      30_000,
     );
   });
 });

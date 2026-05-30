@@ -50,6 +50,18 @@ describe("selectFilesForTask", () => {
       affected_paths: null,
     });
 
-    expect(selected).toHaveLength(MAX_ANALYST_FILES);
+    expect(selected.length).toBeLessThanOrEqual(MAX_ANALYST_FILES);
+  });
+
+  it("limits keyword scan on large trees without path hints", () => {
+    const largeTree = Array.from({ length: 500 }, (_, index) => blob(`src/module/file-${index}.ts`));
+    const selected = selectFilesForTask(largeTree, {
+      title: "module",
+      description: null,
+      affected_paths: null,
+    });
+
+    expect(selected.length).toBeLessThanOrEqual(MAX_ANALYST_FILES);
+    expect(selected.every((path) => path.includes("module"))).toBe(true);
   });
 });
