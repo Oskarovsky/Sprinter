@@ -2,6 +2,7 @@ export { FIBONACCI_STORY_POINTS, isValidStoryPoint, sessionError, type TaskStatu
 export { computeHumanAverage, formatHumanAverage } from "./average";
 export { sortParticipationByPoints } from "./participation";
 export { defaultDisplayNameForUser, ensureProfile, getDisplayName, isDefaultDisplayName } from "./profile";
+export { getAnalystStateForTask, getAnalystVoteForTask } from "./analyst";
 export { createTask, getDefaultSessionId, getLatestActiveTask, getTask, revealTask, startVoting } from "./tasks";
 export type { Profile, SessionSupabaseClient, Task, Vote, VoteParticipation } from "./types";
-export { castVote, listParticipation, listRevealedVotes } from "./votes";
+export { castVote, extractHumanStoryPoints, listParticipation, listRevealedVotes } from "./votes";

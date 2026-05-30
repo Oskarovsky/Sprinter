@@ -2,6 +2,8 @@ import type { APIRoute } from "astro";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { createTask } from "@/lib/session";
 
+const MAX_AFFECTED_PATHS_LENGTH = 2000;
+
 export const POST: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
   if ("response" in auth) {
@@ -19,6 +21,14 @@ export const POST: APIRoute = async (context) => {
   const descriptionRaw = (body as { description?: unknown }).description;
   const description =
     typeof descriptionRaw === "string" && descriptionRaw.trim().length > 0 ? descriptionRaw.trim() : undefined;
+  const affectedPathsRaw = (body as { affectedPaths?: unknown }).affectedPaths;
+  let affectedPaths: string | undefined;
+  if (typeof affectedPathsRaw === "string" && affectedPathsRaw.trim().length > 0) {
+    if (affectedPathsRaw.length > MAX_AFFECTED_PATHS_LENGTH) {
+      return jsonResponse({ error: `affectedPaths must be at most ${MAX_AFFECTED_PATHS_LENGTH} characters` }, 400);
+    }
+    affectedPaths = affectedPathsRaw;
+  }
 
   if (!title) {
     return jsonResponse({ error: "title is required" }, 400);
@@ -27,6 +37,7 @@ export const POST: APIRoute = async (context) => {
   const result = await createTask(auth.supabase, {
     title,
     description,
+    affectedPaths,
     createdBy: auth.user.id,
   });
 

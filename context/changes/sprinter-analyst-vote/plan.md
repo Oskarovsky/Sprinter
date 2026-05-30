@@ -542,67 +542,68 @@ Repo link modal, affected paths on create form, Analyst reference card, SessionR
 
 #### Automated
 
-- [x] 1.1 Migration applies cleanly: `supabase db push` (or CI migration step when present)
-- [x] 1.2 `npm run lint` passes
-- [x] 1.3 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 1.1 Migration applies cleanly: `supabase db push` (or CI migration step when present) — dfaab3b
+- [x] 1.2 `npm run lint` passes — dfaab3b
+- [x] 1.3 `npm run test:coverage` passes with coverage table printed to stdout — dfaab3b
 
 #### Manual
 
-- [x] 1.4 Inspect migration SQL: `repo_oauth_tokens` has no policy granting `authenticated` SELECT
-- [x] 1.5 Confirm `analyst_votes` SELECT policy requires parent task `revealed`
+- [x] 1.4 Inspect migration SQL: `repo_oauth_tokens` has no policy granting `authenticated` SELECT — dfaab3b
+- [x] 1.5 Confirm `analyst_votes` SELECT policy requires parent task `revealed` — dfaab3b
 
 ### Phase 2: OAuth & repo providers
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 2.3 `npm run build` succeeds
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 2.3 `npm run build` succeeds
 
 #### Manual
 
-- [ ] 2.4 Register GitHub OAuth app; complete OAuth flow in dev; connection row created without token in API JSON responses
-- [ ] 2.5 Public repo link succeeds without OAuth
-- [ ] 2.6 Self-hosted GitLab base URL stored and used in provider client
+- [x] 2.4 Register GitHub OAuth app; complete OAuth flow in dev; connection row created without token in API JSON responses — manual 2026-05-30
+- [x] 2.5 Public repo link succeeds without OAuth — manual 2026-05-30
+- [x] 2.6 Self-hosted GitLab base URL stored and used in provider client — manual 2026-05-30
+- [x] 2.7 Private self-hosted GitLab link via PAT (`accessToken` in POST body); token stored server-side only (`gitlab_pat = true`), not returned in API JSON — manual 2026-05-30
 
 ### Phase 3: Cache & Analyst engine
 
 #### Automated
 
-- [ ] 3.1 `npm run test:coverage` passes — includes select-files, path-hints, generate-analyst tests
-- [ ] 3.2 `npm run lint` passes
-- [ ] 3.3 `npm run build` passes
+- [x] 3.1 `npm run test:coverage` passes — includes select-files, path-hints, generate-analyst tests
+- [x] 3.2 `npm run lint` passes
+- [x] 3.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 3.4 Start voting with linked repo → `analyst_votes` pending → ready/failed without blocking HTTP response
-- [ ] 3.5 Task without repo link → `analyst_votes` skipped
-- [ ] 3.6 File cap enforced (~50 files / ~1MB)
+- [x] 3.4 Start voting with linked repo → `analyst_votes` pending → ready/failed without blocking HTTP response — manual 2026-05-30
+- [x] 3.5 Task without repo link → `analyst_votes` skipped — manual 2026-05-30
+- [x] 3.6 File cap enforced (~50 files / ~1MB) — manual 2026-05-30
 
 ### Phase 4: Repo & session APIs
 
 #### Automated
 
-- [ ] 4.1 API validation tests for `/api/repo/link` and session state analyst gating
-- [ ] 4.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 4.3 `npm run lint` passes
+- [x] 4.1 API validation tests for `/api/repo/link` and session state analyst gating
+- [x] 4.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 4.3 `npm run lint` passes
 
 #### Manual
 
-- [ ] 4.4 `GET /api/session/state` before reveal: no analyst fields
-- [ ] 4.5 After reveal with ready analyst: analyst object present
-- [ ] 4.6 After reveal with failed analyst: `analyst: null`
+- [x] 4.4 `GET /api/session/state` before reveal: no analyst fields — manual 2026-05-30
+- [x] 4.5 After reveal with ready analyst: analyst object present — manual 2026-05-30
+- [x] 4.6 After reveal with failed analyst: `analyst: null` — manual 2026-05-30
 
 ### Phase 5: Session UI & integration tests
 
 #### Automated
 
-- [ ] 5.1 `npm run lint` passes
-- [ ] 5.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [ ] 5.3 `npm run build` passes
+- [x] 5.1 `npm run lint` passes
+- [x] 5.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 5.3 `npm run build` passes
 
 #### Manual
 
-- [ ] 5.4 E2E: link repo → task with paths → vote → reveal → Analyst card for all participants
-- [ ] 5.5 Human average excludes Analyst; blind voting unchanged
-- [ ] 5.6 Modal public + private OAuth flows; no tokens in browser responses
+- [x] 5.4 E2E: link repo → task with paths → vote → reveal → Analyst card for all participants — manual 2026-05-30
+- [x] 5.5 Human average excludes Analyst; blind voting unchanged — manual 2026-05-30
+- [x] 5.6 Modal public + private OAuth flows; no tokens in browser responses — manual 2026-05-30

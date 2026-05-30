@@ -177,10 +177,63 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/api/session/participation?taskId=`       | GET    | Masked participation for a task                  |
 | `/api/session/profile`                     | GET    | Current user display name                        |
 | `/api/session/profile`                     | PATCH  | Set display name (`{ displayName }`)             |
-| `/api/session/tasks`                       | POST   | Create task (`{ title, description? }`)          |
+| `/api/session/tasks`                       | POST   | Create task (`{ title, description?, affectedPaths? }`) |
 | `/api/session/tasks/:taskId/start-voting`  | POST   | Move task to voting (creator only)               |
 | `/api/session/vote`                        | POST   | Cast/change vote (`{ taskId, storyPoints }`)     |
 | `/api/session/reveal`                      | POST   | Reveal votes (`{ taskId }`, creator only)        |
+
+### Repository & Sprinter Analyst API routes
+
+Requires authentication. OAuth tokens and PAT values are stored server-side only (`SUPABASE_SERVICE_ROLE_KEY`).
+
+| Route                                      | Method | Description                                                                 |
+| ------------------------------------------ | ------ | --------------------------------------------------------------------------- |
+| `/api/repo/connections`                    | GET    | Facilitator repo library + active session connection id                     |
+| `/api/repo/session`                        | GET    | Active repo summary for the default planning session                        |
+| `/api/repo/link`                           | POST   | Link repo to session (`{ provider, repoUrl, accessMode, gitlabBaseUrl?, accessToken? }`) |
+| `/api/repo/link`                           | DELETE | Disconnect session link (`{ removeFromLibrary?, connectionId? }`)           |
+| `/api/repo/oauth/github/start`             | GET    | Start GitHub OAuth for private repos (redirect)                             |
+| `/api/repo/oauth/github/callback`          | GET    | GitHub OAuth callback                                                       |
+| `/api/repo/oauth/gitlab/start`             | GET    | Start GitLab OAuth for private repos (redirect)                             |
+| `/api/repo/oauth/gitlab/callback`          | GET    | GitLab OAuth callback                                                       |
+
+`GET /api/session/state` includes `analyst: { storyPoints, rationale, label } | null` after reveal when Sprinter Analyst finished successfully.
+
+#### Repository OAuth environment variables
+
+Add to `.env` and `.dev.vars` (restart dev server after changes):
+
+| Variable                     | Description                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------- |
+| `SUPABASE_SERVICE_ROLE_KEY`  | Server-only — stores repo tokens in `repo_oauth_tokens` (never expose)    |
+| `GITHUB_CLIENT_ID`           | GitHub OAuth app client id (private GitHub repos)                           |
+| `GITHUB_CLIENT_SECRET`       | GitHub OAuth secret + OAuth state signing                                   |
+| `GITLAB_CLIENT_ID`           | GitLab OAuth application id (private GitLab repos)                          |
+| `GITLAB_CLIENT_SECRET`       | GitLab OAuth secret                                                         |
+| `OPENROUTER_API_KEY`         | Optional — Sprinter Analyst AI estimates (omit → Analyst status `failed`)   |
+
+#### OAuth app registration
+
+**GitHub** (github.com private repos): Settings → Developer settings → OAuth apps → New OAuth app.
+
+- Authorization callback URL (local): `http://127.0.0.1:4321/api/repo/oauth/github/callback`
+- Production: `https://<your-worker-domain>/api/repo/oauth/github/callback`
+
+**GitLab.com**: User Settings → Applications (or Admin → Applications for groups).
+
+- Redirect URI (local): `http://127.0.0.1:4321/api/repo/oauth/gitlab/callback`
+- Scopes: `read_api`, `read_repository`
+
+**Self-hosted GitLab** (e.g. `gitlab.vodeno.net`): register the OAuth application **on that instance** with the same redirect URI pattern. Users supply the instance base URL when linking. Private repos can also use a personal access token (PAT) via `POST /api/repo/link` instead of OAuth.
+
+Local OAuth smoke test:
+
+```bash
+npm run dev
+npm run smoke:gitlab-oauth
+# complete OAuth in browser, then:
+npm run smoke:gitlab-oauth:verify
+```
 
 ### AI API routes
 
