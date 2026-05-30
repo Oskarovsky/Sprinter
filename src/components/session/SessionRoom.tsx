@@ -2,7 +2,11 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import { FIBONACCI_STORY_POINTS } from "@/lib/session/constants";
 import { connectSessionRoomRealtime, type SessionRealtimeConnectionStatus } from "@/lib/session/realtime";
+import { fetchSessionRepoStatus, type AnalystVotePublic, type SessionRepoStatus } from "@/lib/session/repo-client";
 import type { Task, VoteParticipation } from "@/lib/session/types";
+import AnalystPendingIndicator from "@/components/session/AnalystPendingIndicator";
+import AnalystReferenceCard from "@/components/session/AnalystReferenceCard";
+import RepoLinkModal from "@/components/session/RepoLinkModal";
 import SprinterDraftPanel from "@/components/session/SprinterDraftPanel";
 
 interface SessionStateResponse {
@@ -10,6 +14,8 @@ interface SessionStateResponse {
   participation: VoteParticipation[];
   humanAverage: number | null;
   humanAverageFormatted: string | null;
+  analyst: AnalystVotePublic | null;
+  analystPending: boolean;
 }
 
 interface Props {
@@ -19,6 +25,8 @@ interface Props {
   initialTask: Task | null;
   initialParticipation: VoteParticipation[];
   initialHumanAverageFormatted: string | null;
+  initialAnalyst: AnalystVotePublic | null;
+  initialAnalystPending: boolean;
   realtimeAccessToken: string | null;
   planningSessionId: string | null;
 }
@@ -71,6 +79,22 @@ async function readError(response: Response): Promise<string> {
   return body?.error ?? `Request failed (${response.status})`;
 }
 
+function readInitialRepoQuery(): { repoError: string | null; repoLinked: boolean } {
+  if (typeof window === "undefined") {
+    return { repoError: null, repoLinked: false };
+  }
+  const params = new URLSearchParams(window.location.search);
+  const repoLinked = params.get("repoLinked") === "1";
+  const repoErrorParam = params.get("repoError");
+  if (repoLinked || repoErrorParam) {
+    window.history.replaceState({}, "", window.location.pathname);
+  }
+  return {
+    repoError: repoErrorParam ? decodeURIComponent(repoErrorParam) : null,
+    repoLinked,
+  };
+}
+
 export default function SessionRoom({
   userId,
   initialDisplayName,
@@ -78,6 +102,8 @@ export default function SessionRoom({
   initialTask,
   initialParticipation,
   initialHumanAverageFormatted,
+  initialAnalyst,
+  initialAnalystPending,
   realtimeAccessToken,
   planningSessionId,
 }: Props) {
@@ -89,11 +115,17 @@ export default function SessionRoom({
   const [connectionStatus, setConnectionStatus] = useState<SessionRealtimeConnectionStatus>(() =>
     initialConnectionStatus(planningSessionId),
   );
-  const [bannerError, setBannerError] = useState<string | null>(null);
+  const [initialRepoQuery] = useState(readInitialRepoQuery);
+  const [bannerError, setBannerError] = useState<string | null>(initialRepoQuery.repoError);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newAffectedPaths, setNewAffectedPaths] = useState("");
+  const [analyst, setAnalyst] = useState<AnalystVotePublic | null>(initialAnalyst);
+  const [analystPending, setAnalystPending] = useState(initialAnalystPending);
+  const [repoStatus, setRepoStatus] = useState<SessionRepoStatus | null>(null);
+  const [repoModalOpen, setRepoModalOpen] = useState(false);
 
   const isCreator = task?.created_by === userId;
   const isRevealed = task?.status === "revealed";
@@ -101,6 +133,15 @@ export default function SessionRoom({
   const isDraft = task?.status === "draft";
   const ownVote = participation.find((row) => row.user_id === userId)?.story_points ?? null;
   const showLiveBadge = Boolean(planningSessionId);
+
+  const refreshRepoStatus = useCallback(async () => {
+    try {
+      const status = await fetchSessionRepoStatus();
+      setRepoStatus(status);
+    } catch {
+      /* repo badge is optional — do not block poker flows */
+    }
+  }, []);
 
   const refetchState = useCallback(async (taskId?: string) => {
     const query = taskId ? `?taskId=${encodeURIComponent(taskId)}` : "";
@@ -114,8 +155,49 @@ export default function SessionRoom({
     setTask(data.task);
     setParticipation(data.participation);
     setHumanAverageFormatted(data.humanAverageFormatted);
+    setAnalyst(data.analyst);
+    setAnalystPending(data.analystPending);
     setBannerError(null);
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        const status = await fetchSessionRepoStatus();
+        if (!cancelled) {
+          setRepoStatus(status);
+        }
+      } catch {
+        /* repo badge is optional — do not block poker flows */
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    const taskId = task?.id;
+    const taskStatus = task?.status;
+    if (!taskId || taskStatus !== "revealed" || analyst || !analystPending) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      void refetchState(taskId);
+    }, 3000);
+    const timeout = window.setTimeout(() => {
+      window.clearInterval(interval);
+    }, 120_000);
+
+    return () => {
+      window.clearInterval(interval);
+      window.clearTimeout(timeout);
+    };
+  }, [task?.id, task?.status, analyst, analystPending, refetchState]);
 
   useEffect(() => {
     if (!planningSessionId || needsDisplayName) {
@@ -134,11 +216,12 @@ export default function SessionRoom({
       supabase,
       planningSessionId,
       () => {
-        void refetchState();
+        void refetchState(task?.id);
       },
       {
         accessToken: realtimeAccessToken,
         onStatusChange: setConnectionStatus,
+        taskId: task?.id ?? null,
       },
     )
       .then((disconnect) => {
@@ -157,7 +240,7 @@ export default function SessionRoom({
       cancelled = true;
       cleanup?.();
     };
-  }, [planningSessionId, needsDisplayName, realtimeAccessToken, refetchState]);
+  }, [planningSessionId, needsDisplayName, realtimeAccessToken, refetchState, task?.id]);
 
   async function saveDisplayName(event: React.SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -187,7 +270,11 @@ export default function SessionRoom({
       const response = await fetch("/api/session/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle, description: newDescription || undefined }),
+        body: JSON.stringify({
+          title: newTitle,
+          description: newDescription || undefined,
+          affectedPaths: newAffectedPaths.trim() || undefined,
+        }),
       });
       if (!response.ok) {
         setBannerError(await readError(response));
@@ -197,8 +284,11 @@ export default function SessionRoom({
       setTask(data.task);
       setParticipation([]);
       setHumanAverageFormatted(null);
+      setAnalyst(null);
+      setAnalystPending(false);
       setNewTitle("");
       setNewDescription("");
+      setNewAffectedPaths("");
     } finally {
       setIsSubmitting(false);
     }
@@ -218,6 +308,7 @@ export default function SessionRoom({
       }
       const data = (await response.json()) as { task: Task };
       setTask(data.task);
+      await refetchState(task.id);
     } finally {
       setIsSubmitting(false);
     }
@@ -315,17 +406,47 @@ export default function SessionRoom({
             Planning room
           </h2>
           {task ? <p className="mt-1 text-sm text-blue-100/80">{task.title}</p> : null}
+          {repoStatus?.linked && repoStatus.connection ? (
+            <p className="mt-2 inline-flex flex-wrap items-center gap-2 text-xs text-cyan-100/80">
+              <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-2 py-0.5">
+                {repoStatus.connection.provider} · {repoStatus.connection.repoFullName}
+              </span>
+              <span className="text-blue-100/50">linked by {repoStatus.connection.linkedByDisplayName}</span>
+            </p>
+          ) : null}
         </div>
-        {showLiveBadge ? (
-          <span
-            className={`rounded-full border px-3 py-1 text-xs font-medium ${connectionClassName(connectionStatus)}`}
-            role="status"
-            aria-live="polite"
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setRepoModalOpen(true);
+            }}
+            className="rounded-lg border border-cyan-400/40 bg-cyan-500/15 px-3 py-1.5 text-xs font-medium text-cyan-50 hover:bg-cyan-500/25"
           >
-            {connectionLabel(connectionStatus)}
-          </span>
-        ) : null}
+            Link repository
+          </button>
+          {showLiveBadge ? (
+            <span
+              className={`rounded-full border px-3 py-1 text-xs font-medium ${connectionClassName(connectionStatus)}`}
+              role="status"
+              aria-live="polite"
+            >
+              {connectionLabel(connectionStatus)}
+            </span>
+          ) : null}
+        </div>
       </div>
+
+      <RepoLinkModal
+        key={repoModalOpen ? "repo-modal-open" : "repo-modal-closed"}
+        open={repoModalOpen}
+        onClose={() => {
+          setRepoModalOpen(false);
+        }}
+        onLinked={() => {
+          void refreshRepoStatus();
+        }}
+      />
 
       {bannerError ? (
         <p className="rounded-lg border border-rose-400/30 bg-rose-500/15 px-3 py-2 text-sm text-rose-100" role="alert">
@@ -366,6 +487,21 @@ export default function SessionRoom({
                 rows={2}
                 className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
               />
+            </label>
+            <label className="block text-sm text-blue-100/90">
+              Affected paths (optional)
+              <textarea
+                value={newAffectedPaths}
+                onChange={(e) => {
+                  setNewAffectedPaths(e.target.value);
+                }}
+                rows={3}
+                placeholder={"src/lib/session/\nsrc/pages/api/session/"}
+                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 font-mono text-sm text-white"
+              />
+              <span className="mt-1 block text-xs text-blue-100/50">
+                One path or glob per line — guides Sprinter Analyst.
+              </span>
             </label>
             <button
               type="submit"
@@ -441,6 +577,10 @@ export default function SessionRoom({
           ) : (
             <p className="mt-2 text-sm text-blue-100/60">Peer story points stay hidden until reveal.</p>
           )}
+          {isRevealed && analyst ? (
+            <AnalystReferenceCard storyPoints={analyst.storyPoints} rationale={analyst.rationale} />
+          ) : null}
+          {analystPending && !analyst ? <AnalystPendingIndicator /> : null}
           {participation.length === 0 ? (
             <p className="mt-2 text-sm text-blue-100/60">No votes yet.</p>
           ) : (

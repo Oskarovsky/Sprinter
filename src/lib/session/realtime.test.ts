@@ -12,6 +12,7 @@ vi.mock("./realtime-auth", () => ({
 import {
   channelNameForSession,
   connectSessionRoomRealtime,
+  shouldRefetchOnAnalystVoteEvent,
   shouldRefetchOnTaskEvent,
   shouldRefetchOnVoteEvent,
 } from "./realtime";
@@ -136,6 +137,16 @@ describe("shouldRefetchOnVoteEvent", () => {
 
   it("ignores unrelated event types", () => {
     expect(shouldRefetchOnVoteEvent({ eventType: "TRUNCATE" })).toBe(false);
+  });
+});
+
+describe("shouldRefetchOnAnalystVoteEvent", () => {
+  it.each(["INSERT", "UPDATE"] as const)("refetches on %s", (eventType) => {
+    expect(shouldRefetchOnAnalystVoteEvent({ eventType })).toBe(true);
+  });
+
+  it("ignores delete events", () => {
+    expect(shouldRefetchOnAnalystVoteEvent({ eventType: "DELETE" })).toBe(false);
   });
 });
 

@@ -25,7 +25,17 @@ export async function getDefaultSessionId(supabase: SessionSupabaseClient): Prom
 
 export async function createTask(
   supabase: SessionSupabaseClient,
-  { title, description, createdBy }: { title: string; description?: string; createdBy: string },
+  {
+    title,
+    description,
+    affectedPaths,
+    createdBy,
+  }: {
+    title: string;
+    description?: string;
+    affectedPaths?: string;
+    createdBy: string;
+  },
 ) {
   const sessionResult = await getDefaultSessionId(supabase);
   if (sessionResult.error) {
@@ -38,6 +48,7 @@ export async function createTask(
       session_id: sessionResult.data,
       title,
       description: description ?? null,
+      affected_paths: affectedPaths ?? null,
       created_by: createdBy,
       status: "draft",
     })

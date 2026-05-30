@@ -3,7 +3,7 @@ project: "10xSprinter"
 version: 3
 status: draft
 created: 2026-05-20
-updated: 2026-05-25
+updated: 2026-05-30
 context_type: greenfield
 product_type: web-app
 target_scale:
@@ -111,7 +111,7 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 #### Acceptance Criteria
 
 - Only the session facilitator (who linked the repo) can connect, update, or disconnect the repository; other participants cannot
-- MVP supports GitHub and GitLab repository URLs only; local filesystem paths are out of scope
+- MVP supports GitHub and GitLab (`gitlab.com` and self-managed instances with facilitator-supplied base URL) repository URLs only; local filesystem paths are out of scope
 - Repository access credentials are stored server-side; repo contents and tokens are not exposed to other participants before reveal
 - Analyst vote uses the same Fibonacci-style scale as human voters
 - Analyst vote and rationale appear only after reveal, never during blind voting
@@ -138,17 +138,17 @@ Before reveal, participants can see **who has voted** (e.g. count or names) but 
 
 - FR-003: User can join the shared planning session (single room). Priority: must-have
   > Socrates: Counter-argument considered: "single global room breaks when two teams use the app concurrently." Resolution: kept as MVP trade-off; multi-room explicitly deferred (non-goal).
-- FR-004: User can create a task with a required title and optional description. Priority: must-have
+- FR-004: User can create a task with a required title, optional description, and optional affected paths/modules hints for Sprinter Analyst. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
 - FR-005: User can start voting on a task they created. Priority: must-have
   > Socrates: No counter-argument; it stands as written.
 
 ### Repository & Sprinter Analyst
 
-- FR-017: Session facilitator can link one external GitHub or GitLab repository URL to the planning session. Priority: must-have
+- FR-017: Session facilitator can link one external GitHub or GitLab repository URL to the planning session (`gitlab.com` or self-managed with facilitator-supplied instance base URL). Priority: must-have
 - FR-018: Session facilitator can update or disconnect the linked repository. Priority: must-have
-- FR-019: System verifies repository access server-side (public repo or authorized credentials supplied by the facilitator). Priority: must-have
-- FR-020: When a repository is linked, system computes a sealed Sprinter Analyst story-point vote from code-complexity analysis before reveal. Priority: must-have
+- FR-019: System verifies repository access server-side: public repos without a token, or private repos via GitHub/GitLab OAuth authorized by the facilitator when linking. The facilitator chooses public vs private access mode at link time. Priority: must-have
+- FR-020: When a repository is linked, system computes a sealed Sprinter Analyst story-point vote from code-complexity analysis scoped to the active task (title/description inference, narrowed by optional path hints). Priority: must-have
 - FR-021: After reveal, system shows the Analyst vote and a short rationale (complexity signals, affected areas) separately from human votes. Priority: must-have
 - FR-022: Team average excludes the Analyst vote; only authenticated human participants count toward the average. Priority: must-have
 - FR-023: Local filesystem project paths are not supported in MVP. Priority: must-have
@@ -195,7 +195,7 @@ The app computes the team average from blind individual story-point selections b
 
 When the session facilitator has linked an external GitHub or GitLab repository, the system produces one Analyst story-point vote from server-side code-complexity analysis scoped to the active task.
 
-**Inputs:** Linked repository (URL + server-side access), active task (title and optional description), optional path or module hints if captured later.
+**Inputs:** Linked repository (URL + server-side access; public or OAuth-authorized private), active task (title and optional description), optional **affected paths/modules** hints on the task form. Server may reuse a persisted repo snapshot/index for repos the facilitator has linked before, instead of re-fetching the full tree on every session.
 
 **Output:** After reveal only — one Fibonacci-style story-point value labeled **Sprinter Analyst**, plus a short rationale summary (e.g. files touched, complexity signals). The Analyst vote is **excluded** from the human team average.
 
@@ -228,7 +228,10 @@ Every participant must be authenticated before joining a voting session.
 ## Open Questions
 
 1. **target_scale ballparks** — Input specifies `users: small` (~10 users on one dev team). `qps` and `data_volume` ballparks were not captured. Owner: user. By: before stack selection.
-2. **Repository auth mechanism** — Public repos only vs. facilitator-supplied PAT vs. GitHub/GitLab OAuth app. Owner: user + implementer. By: before Sprinter Analyst implementation.
-3. **Task-to-code scope** — How Analyst maps a task to repo files in MVP: title/description inference only, optional path hints on the task form, or facilitator-selected paths. Owner: user. By: before FR-020 implementation.
-4. **GitLab self-hosted** — Whether MVP supports gitlab.com only or also self-managed GitLab instances. Owner: user. By: before FR-017 implementation.
-5. **MVP timeline impact** — Repo fetch + code analysis + Analyst vote adds scope beyond core poker; confirm 3-week after-hours budget still holds or defer Analyst to a follow-on milestone. Owner: user. By: before `/10x-plan` or implementation.
+
+## Resolved Questions
+
+2. **Repository auth mechanism** — **Resolved 2026-05-30:** GitHub/GitLab OAuth for private repos; public repos without token; facilitator selects public vs private when linking. Persist credentials and a server-side repo snapshot/index so repeat sessions on the same repo avoid full re-fetch.
+3. **Task-to-code scope** — **Resolved 2026-05-30:** Title/description inference plus optional affected-path hints on the task form.
+4. **GitLab self-hosted** — **Resolved 2026-05-30:** `gitlab.com` and self-managed GitLab; facilitator supplies instance base URL.
+5. **MVP timeline impact** — **Resolved 2026-05-30:** Sprinter Analyst stays in MVP; ship after Sprinter Coach (S-03).
