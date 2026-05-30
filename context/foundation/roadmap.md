@@ -3,10 +3,10 @@ project: "10xSprinter"
 version: 1
 status: draft
 created: 2026-05-26
-updated: 2026-05-29
+updated: 2026-05-30
 prd_version: 3
 main_goal: speed
-top_blocker: decisions
+top_blocker: capacity
 ---
 
 # Roadmap: 10xSprinter
@@ -35,7 +35,7 @@ During Scrum work in a company dev team, there is no web tool that unifies popul
 | S-01 | blind-planning-poker | run a full blind planning-poker vote and see the human average after reveal | F-01, F-02 | US-01, FR-001, FR-002, FR-003, FR-004, FR-005, FR-006, FR-007, FR-008, FR-009, FR-010, FR-011, FR-012 | done |
 | S-02 | sprinter-draft-tasks | paste raw notes and apply AI-generated task drafts to the creation form | S-01, F-03 | US-02, FR-013, FR-014, FR-016 | done |
 | S-03 | sprinter-coach-prompts | request discussion prompts after reveal when votes diverge | S-01, F-03 | US-03, FR-015, FR-016 | proposed |
-| S-04 | sprinter-analyst-vote | link a repo and see a reference-only Analyst story-point vote after reveal | S-01, F-01 | US-04, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023 | blocked |
+| S-04 | sprinter-analyst-vote | link a repo and see a reference-only Analyst story-point vote after reveal | S-01, F-01 | US-04, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023 | proposed |
 
 ## Streams
 
@@ -46,7 +46,7 @@ Navigation aid — groups items that share a Prerequisites chain. Canonical orde
 | A | Core poker & sync | `F-01` → `F-02` → `S-01` | Speed-first path to north star; nothing user-visible until `S-01`. |
 | B | AI scaffold | `F-03` → `S-02` | `F-03` can run parallel with `F-02` once `F-01` lands; Draft ships after core poker. |
 | C | Coach loop | `S-03` | Joins Stream A at `S-01`; needs revealed votes before Coach is meaningful. |
-| D | Analyst & repo | `S-04` | Joins Stream A at `S-01`; blocked until Open Questions on repo auth and scope resolve. |
+| D | Analyst & repo | `S-04` | Joins Stream A at `S-01`; ships in MVP after `S-03`; ready for `/10x-plan`. |
 
 ## Baseline
 
@@ -141,19 +141,20 @@ Foundations below assume these are present and do NOT re-scaffold them.
 
 ### S-04: Sprinter Analyst reference vote
 
-- **Outcome:** session facilitator can link one GitHub or GitLab repository; after reveal, all participants see a visually distinct reference-only Analyst story-point vote and rationale excluded from the human average.
+- **Outcome:** session facilitator can link one GitHub or GitLab repository (public or private); after reveal, all participants see a visually distinct reference-only Analyst story-point vote and rationale excluded from the human average.
 - **Change ID:** sprinter-analyst-vote
 - **PRD refs:** US-04, FR-017, FR-018, FR-019, FR-020, FR-021, FR-022, FR-023
 - **Prerequisites:** S-01, F-01
-- **Parallel with:** S-02, S-03
+- **Parallel with:** S-03 (sequenced after S-03 in MVP delivery order)
 - **Blockers:** —
-- **Unknowns:**
-  - Repository auth mechanism (public only vs PAT vs OAuth app) — Owner: user + implementer. Block: yes.
-  - Task-to-code scope for Analyst (title inference vs path hints vs facilitator-selected paths) — Owner: user. Block: yes.
-  - GitLab self-hosted support (gitlab.com only vs self-managed instances) — Owner: user. Block: yes.
-  - Whether Analyst stays in the 3-week after-hours MVP or defers to a follow-on milestone — Owner: user. Block: yes.
-- **Risk:** Highest decision surface area; blocked until Open Questions resolve so `/10x-plan` is not wasted on unset repo integration choices.
-- **Status:** blocked
+- **Decisions (2026-05-30):**
+  - **Repository auth:** GitHub and GitLab OAuth apps for private repos; public repos need no token. When linking a repo to the session, the facilitator chooses public vs private access mode. Persist linked-repo credentials and a server-side repo snapshot/index per facilitator so repeat sessions on the same repo reuse cached context instead of re-fetching the full tree each time.
+  - **Task-to-code scope:** Title/description inference plus an optional **affected paths/modules** field on the task form; hints narrow analysis when provided.
+  - **GitLab scope:** `gitlab.com` and self-managed instances — facilitator supplies the instance base URL (e.g. `gitlab.mycompany.com`).
+  - **MVP timeline:** Sprinter Analyst stays in the 3-week after-hours MVP; ship after S-03 (Coach).
+- **Unknowns:** —
+- **Risk:** OAuth app registration, self-hosted GitLab URL validation, and repo snapshot caching add integration surface; plan should scope a minimal cache (metadata + targeted file reads) before full-tree indexing.
+- **Status:** proposed
 
 ## Backlog Handoff
 
@@ -165,15 +166,18 @@ Foundations below assume these are present and do NOT re-scaffold them.
 | S-01 | blind-planning-poker | End-to-end blind planning-poker session | no | Depends on F-01, F-02 |
 | S-02 | sprinter-draft-tasks | Sprinter Draft — generate tasks from pasted notes | no | Depends on S-01, F-03 |
 | S-03 | sprinter-coach-prompts | Sprinter Coach — divergence discussion prompts | no | Depends on S-01, F-03 |
-| S-04 | sprinter-analyst-vote | Sprinter Analyst — repo-linked reference vote | no | Blocked on Open Questions |
+| S-04 | sprinter-analyst-vote | Sprinter Analyst — repo-linked reference vote | yes | OAuth + public/private choice; path hints; self-hosted GitLab; after S-03 |
 
 ## Open Roadmap Questions
 
-1. **target_scale ballparks** — Input specifies `users: small` (~10 users on one dev team). `qps` and `data_volume` ballparks were not captured. Owner: user. Block: roadmap-wide (informing capacity assumptions, not blocking S-01).
-2. **Repository auth mechanism** — Public repos only vs. facilitator-supplied PAT vs. GitHub/GitLab OAuth app. Owner: user + implementer. Block: S-04.
-3. **Task-to-code scope** — How Analyst maps a task to repo files in MVP: title/description inference only, optional path hints on the task form, or facilitator-selected paths. Owner: user. Block: S-04.
-4. **GitLab self-hosted** — Whether MVP supports gitlab.com only or also self-managed GitLab instances. Owner: user. Block: S-04.
-5. **MVP timeline impact** — Repo fetch + code analysis + Analyst vote adds scope beyond core poker; confirm 3-week after-hours budget still holds or defer Analyst to a follow-on milestone. Owner: user. Block: S-04.
+1. **target_scale ballparks** — Input specifies `users: small` (~10 users on one dev team). `qps` and `data_volume` ballparks were not captured. Owner: user. Block: roadmap-wide (informing capacity assumptions, not blocking delivery).
+
+## Resolved Roadmap Questions
+
+2. **Repository auth mechanism** — **Resolved 2026-05-30:** GitHub/GitLab OAuth for private repos; public repos without token; facilitator picks public vs private when linking. Reuse persisted repo credentials and server-side snapshot/index across sessions on the same repo to avoid full re-fetch each time.
+3. **Task-to-code scope** — **Resolved 2026-05-30:** Title/description inference plus optional affected-path hints on the task form.
+4. **GitLab self-hosted** — **Resolved 2026-05-30:** `gitlab.com` and self-managed instances; facilitator supplies instance base URL.
+5. **MVP timeline impact** — **Resolved 2026-05-30:** Analyst stays in MVP; deliver after S-03 within the 3-week after-hours budget.
 
 ## Parked
 

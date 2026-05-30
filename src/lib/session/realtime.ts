@@ -21,6 +21,10 @@ export function shouldRefetchOnTaskEvent(payload: PostgresChangePayload): boolea
   return payload.eventType === "UPDATE";
 }
 
+export function shouldRefetchOnAnalystVoteEvent(payload: PostgresChangePayload): boolean {
+  return payload.eventType === "INSERT" || payload.eventType === "UPDATE";
+}
+
 function mapChannelStatus(status: string): SessionRealtimeConnectionStatus {
   switch (status) {
     case "SUBSCRIBED":
@@ -40,8 +44,9 @@ export function subscribeToSessionRoom(
   sessionId: string,
   onRefetch: () => void,
   onStatusChange?: (status: SessionRealtimeConnectionStatus) => void,
+  taskId?: string | null,
 ): () => void {
-  const channel: RealtimeChannel = supabase
+  let channel: RealtimeChannel = supabase
     .channel(channelNameForSession(sessionId))
     .on(
       "postgres_changes",
@@ -51,10 +56,23 @@ export function subscribeToSessionRoom(
           onRefetch();
         }
       },
-    )
-    .subscribe((status) => {
-      onStatusChange?.(mapChannelStatus(status));
-    });
+    );
+
+  if (taskId) {
+    channel = channel.on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "analyst_votes", filter: `task_id=eq.${taskId}` },
+      (payload) => {
+        if (shouldRefetchOnAnalystVoteEvent({ eventType: payload.eventType })) {
+          onRefetch();
+        }
+      },
+    );
+  }
+
+  channel = channel.subscribe((status) => {
+    onStatusChange?.(mapChannelStatus(status));
+  });
 
   return () => {
     void supabase.removeChannel(channel);
@@ -68,6 +86,7 @@ export async function connectSessionRoomRealtime(
   options?: {
     accessToken?: string | null;
     onStatusChange?: (status: SessionRealtimeConnectionStatus) => void;
+    taskId?: string | null;
   },
 ): Promise<(() => void) | null> {
   const authed = await ensureRealtimeAuth(supabase, options?.accessToken);
@@ -76,7 +95,7 @@ export async function connectSessionRoomRealtime(
     return null;
   }
 
-  const stopChannel = subscribeToSessionRoom(supabase, sessionId, onRefetch, options?.onStatusChange);
+  const stopChannel = subscribeToSessionRoom(supabase, sessionId, onRefetch, options?.onStatusChange, options?.taskId);
   const stopAuthWatch = watchRealtimeAuth(supabase, () => {
     options?.onStatusChange?.("error");
     stopChannel();

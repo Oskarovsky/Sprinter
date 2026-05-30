@@ -38,3 +38,25 @@ export interface OpenRouterCoachResponse {
   summary: string;
   questions: string[];
 }
+
+export interface AnalystFileSnippet {
+  path: string;
+  content: string;
+}
+
+export interface AnalystInput {
+  taskTitle: string;
+  taskDescription?: string;
+  affectedPaths: string[];
+  files: AnalystFileSnippet[];
+}
+
+export interface AnalystResult {
+  storyPoints: number;
+  rationale: string;
+}
+
+export interface OpenRouterAnalystResponse {
+  storyPoints?: number;
+  rationale?: string;
+}

@@ -1,4 +1,5 @@
 export function computeHumanAverage(points: number[]): number | null {
+  // Human participant votes only — never pass Sprinter Analyst reference points here.
   if (points.length === 0) {
     return null;
   }
