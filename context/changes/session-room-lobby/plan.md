@@ -487,9 +487,9 @@ End-to-end wiring, script updates, README notes, full manual QA matrix.
 
 #### Automated
 
-- [x] 5.1 `npm run lint` passes
-- [x] 5.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 5.3 `npm run build` succeeds
+- [x] 5.1 `npm run lint` passes — acad064
+- [x] 5.2 `npm run test:coverage` passes with coverage table printed to stdout — acad064
+- [x] 5.3 `npm run build` succeeds — acad064
 
 #### Manual
 
