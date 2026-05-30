@@ -29,6 +29,12 @@ interface Props {
   initialAnalystPending: boolean;
   realtimeAccessToken: string | null;
   planningSessionId: string | null;
+  sessionSlug: string;
+}
+
+function withSessionSlug(path: string, sessionSlug: string, extra?: Record<string, string>): string {
+  const params = new URLSearchParams({ sessionSlug, ...extra });
+  return `${path}?${params.toString()}`;
 }
 
 function formatStoryPoints(points: number | null, isRevealed: boolean): string {
@@ -117,6 +123,7 @@ export default function SessionRoom({
   initialAnalystPending,
   realtimeAccessToken,
   planningSessionId,
+  sessionSlug,
 }: Props) {
   const [needsDisplayName, setNeedsDisplayName] = useState(initialNeedsDisplayName);
   const [displayNameInput, setDisplayNameInput] = useState(initialDisplayName ?? "");
@@ -157,36 +164,39 @@ export default function SessionRoom({
 
   const refreshRepoStatus = useCallback(async () => {
     try {
-      const status = await fetchSessionRepoStatus();
+      const status = await fetchSessionRepoStatus(sessionSlug);
       setRepoStatus(status);
     } catch {
       /* repo badge is optional — do not block poker flows */
     }
-  }, []);
+  }, [sessionSlug]);
 
-  const refetchState = useCallback(async (taskId?: string) => {
-    const query = taskId ? `?taskId=${encodeURIComponent(taskId)}` : "";
-    const response = await fetch(`/api/session/state${query}`);
-    if (!response.ok) {
-      setBannerError(await readError(response));
-      return;
-    }
+  const refetchState = useCallback(
+    async (taskId?: string) => {
+      const extra = taskId ? { taskId } : undefined;
+      const response = await fetch(withSessionSlug("/api/session/state", sessionSlug, extra));
+      if (!response.ok) {
+        setBannerError(await readError(response));
+        return;
+      }
 
-    const data = (await response.json()) as SessionStateResponse;
-    setTask(data.task);
-    setParticipation(data.participation);
-    setHumanAverageFormatted(data.humanAverageFormatted);
-    setAnalyst(data.analyst);
-    setAnalystPending(data.analystPending);
-    setBannerError(null);
-  }, []);
+      const data = (await response.json()) as SessionStateResponse;
+      setTask(data.task);
+      setParticipation(data.participation);
+      setHumanAverageFormatted(data.humanAverageFormatted);
+      setAnalyst(data.analyst);
+      setAnalystPending(data.analystPending);
+      setBannerError(null);
+    },
+    [sessionSlug],
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const status = await fetchSessionRepoStatus();
+        const status = await fetchSessionRepoStatus(sessionSlug);
         if (!cancelled) {
           setRepoStatus(status);
         }
@@ -198,7 +208,7 @@ export default function SessionRoom({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sessionSlug]);
 
   useEffect(() => {
     const taskId = task?.id;
@@ -288,7 +298,7 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch("/api/session/tasks", {
+      const response = await fetch(withSessionSlug("/api/session/tasks", sessionSlug), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -322,7 +332,9 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch(`/api/session/tasks/${task.id}/start-voting`, { method: "POST" });
+      const response = await fetch(withSessionSlug(`/api/session/tasks/${task.id}/start-voting`, sessionSlug), {
+        method: "POST",
+      });
       if (!response.ok) {
         setBannerError(await readError(response));
         return;
@@ -342,10 +354,10 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch("/api/session/vote", {
+      const response = await fetch(withSessionSlug("/api/session/vote", sessionSlug), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId: task.id, storyPoints }),
+        body: JSON.stringify({ taskId: task.id, storyPoints, sessionSlug }),
       });
       if (!response.ok) {
         setBannerError(await readError(response));
@@ -364,10 +376,10 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch("/api/session/reveal", {
+      const response = await fetch(withSessionSlug("/api/session/reveal", sessionSlug), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId: task.id }),
+        body: JSON.stringify({ taskId: task.id, sessionSlug }),
       });
       if (!response.ok) {
         setBannerError(await readError(response));
@@ -459,6 +471,7 @@ export default function SessionRoom({
       <RepoLinkModal
         key={repoModalOpen ? "repo-modal-open" : "repo-modal-closed"}
         open={repoModalOpen}
+        sessionSlug={sessionSlug}
         onClose={() => {
           setRepoModalOpen(false);
         }}
