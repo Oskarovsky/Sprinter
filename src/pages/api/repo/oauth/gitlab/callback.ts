@@ -12,6 +12,7 @@ import {
   parseGitlabRepoUrl,
 } from "@/lib/repo/providers/gitlab";
 import { requireSessionAuth } from "@/lib/session/api-json";
+import { getDefaultSessionId } from "@/lib/session";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 
 export const GET: APIRoute = async (context) => {
@@ -92,7 +93,13 @@ export const GET: APIRoute = async (context) => {
     return repoErrorRedirect("Could not store repository credentials", state.returnPath);
   }
 
+  const sessionResult = await getDefaultSessionId(auth.supabase);
+  if (sessionResult.error) {
+    return repoErrorRedirect("Default planning session not configured", state.returnPath);
+  }
+
   const linkResult = await setSessionRepoLink(auth.supabase, {
+    sessionId: sessionResult.data,
     connectionId: connectionResult.data.id,
     linkedBy: auth.user.id,
   });

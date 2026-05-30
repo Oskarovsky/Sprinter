@@ -1,14 +1,20 @@
 import type { PostgrestError } from "@supabase/supabase-js";
 import { sessionError } from "./constants";
+import { normalizePlanningSessionSlug } from "./slug";
 import type { PlanningSessionRow, SessionSupabaseClient, Task } from "./types";
 
 type SessionIdResult = { data: string; error: null } | { data: null; error: PostgrestError };
 
-export async function getDefaultSessionId(supabase: SessionSupabaseClient): Promise<SessionIdResult> {
+export async function getSessionIdBySlug(supabase: SessionSupabaseClient, slug: string): Promise<SessionIdResult> {
+  const normalizedSlug = normalizePlanningSessionSlug(slug);
+  if (!normalizedSlug) {
+    return { data: null, error: sessionError("Invalid room slug", "VALIDATION") };
+  }
+
   const response: { data: unknown; error: PostgrestError | null } = await supabase
     .from("planning_sessions")
     .select("id")
-    .eq("slug", "default")
+    .eq("slug", normalizedSlug)
     .maybeSingle();
 
   if (response.error) {
@@ -17,35 +23,76 @@ export async function getDefaultSessionId(supabase: SessionSupabaseClient): Prom
 
   const row = response.data as Pick<PlanningSessionRow, "id"> | null;
   if (!row) {
-    return { data: null, error: sessionError("Default planning session not configured") };
+    return { data: null, error: sessionError("Planning session not found", "NOT_FOUND") };
   }
 
   return { data: row.id, error: null };
 }
 
+export async function getDefaultSessionId(supabase: SessionSupabaseClient): Promise<SessionIdResult> {
+  return getSessionIdBySlug(supabase, "default");
+}
+
+export async function listPlanningSessions(supabase: SessionSupabaseClient): Promise<{
+  data: PlanningSessionRow[] | null;
+  error: PostgrestError | null;
+}> {
+  const response = await supabase
+    .from("planning_sessions")
+    .select("id, slug, created_at")
+    .order("created_at", { ascending: false });
+
+  return {
+    data: (response.data ?? null) as PlanningSessionRow[] | null,
+    error: response.error,
+  };
+}
+
+export async function createPlanningSession(
+  supabase: SessionSupabaseClient,
+  rawSlug: string,
+): Promise<SessionIdResult> {
+  const slug = normalizePlanningSessionSlug(rawSlug);
+  if (!slug) {
+    return { data: null, error: sessionError("Invalid room slug", "VALIDATION") };
+  }
+
+  const response: { data: unknown; error: PostgrestError | null } = await supabase
+    .from("planning_sessions")
+    .insert({ slug })
+    .select("id")
+    .single();
+
+  if (response.error) {
+    if (response.error.code === "23505") {
+      return { data: null, error: sessionError("Room slug already exists", "DUPLICATE") };
+    }
+    return { data: null, error: response.error };
+  }
+
+  return { data: (response.data as { id: string }).id, error: null };
+}
+
 export async function createTask(
   supabase: SessionSupabaseClient,
   {
+    sessionId,
     title,
     description,
     affectedPaths,
     createdBy,
   }: {
+    sessionId: string;
     title: string;
     description?: string;
     affectedPaths?: string;
     createdBy: string;
   },
 ) {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { data: null, error: sessionResult.error };
-  }
-
   const response: { data: unknown; error: PostgrestError | null } = await supabase
     .from("tasks")
     .insert({
-      session_id: sessionResult.data,
+      session_id: sessionId,
       title,
       description: description ?? null,
       affected_paths: affectedPaths ?? null,
@@ -68,16 +115,11 @@ export async function getTask(supabase: SessionSupabaseClient, taskId: string) {
   return { data: response.data as Task | null, error: response.error };
 }
 
-export async function getLatestActiveTask(supabase: SessionSupabaseClient) {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { data: null, error: sessionResult.error };
-  }
-
+export async function getLatestActiveTask(supabase: SessionSupabaseClient, sessionId: string) {
   const response: { data: unknown; error: PostgrestError | null } = await supabase
     .from("tasks")
     .select("*")
-    .eq("session_id", sessionResult.data)
+    .eq("session_id", sessionId)
     .in("status", ["voting", "revealed"])
     .order("updated_at", { ascending: false })
     .limit(1)

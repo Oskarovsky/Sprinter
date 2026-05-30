@@ -1,6 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getDisplayName } from "@/lib/session/profile";
-import { getDefaultSessionId } from "@/lib/session/tasks";
 import type { FacilitatorRepoConnection, RepoAccessMode, RepoProvider } from "./types";
 import type { OAuthTokenResponse } from "./tree-types";
 
@@ -69,22 +68,19 @@ export async function upsertFacilitatorConnection(supabase: SupabaseClient, inpu
 export async function setSessionRepoLink(
   supabase: SupabaseClient,
   {
+    sessionId,
     connectionId,
     linkedBy,
   }: {
+    sessionId: string;
     connectionId: string;
     linkedBy: string;
   },
 ) {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { data: null, error: sessionResult.error };
-  }
-
   const existing = await supabase
     .from("session_repo_links")
     .select("linked_by")
-    .eq("session_id", sessionResult.data)
+    .eq("session_id", sessionId)
     .maybeSingle();
 
   if (existing.error) {
@@ -107,7 +103,7 @@ export async function setSessionRepoLink(
         connection_id: connectionId,
         linked_at: linkedAt,
       })
-      .eq("session_id", sessionResult.data)
+      .eq("session_id", sessionId)
       .select()
       .single();
 
@@ -117,7 +113,7 @@ export async function setSessionRepoLink(
   const response = await supabase
     .from("session_repo_links")
     .insert({
-      session_id: sessionResult.data,
+      session_id: sessionId,
       connection_id: connectionId,
       linked_by: linkedBy,
       linked_at: linkedAt,
@@ -172,26 +168,23 @@ export async function storeGitlabPatToken(
 export async function disconnectSessionRepoLink(
   supabase: SupabaseClient,
   {
+    sessionId,
     linkedBy,
     removeFromLibrary,
     connectionId,
   }: {
+    sessionId: string;
     linkedBy: string;
     removeFromLibrary: boolean;
     connectionId?: string;
   },
 ) {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { error: sessionResult.error };
-  }
-
   let targetConnectionId = connectionId;
   if (!targetConnectionId) {
     const linkResponse = await supabase
       .from("session_repo_links")
       .select("connection_id, linked_by")
-      .eq("session_id", sessionResult.data)
+      .eq("session_id", sessionId)
       .maybeSingle();
 
     if (linkResponse.error) {
@@ -209,7 +202,7 @@ export async function disconnectSessionRepoLink(
     targetConnectionId = linkResponse.data.connection_id as string;
   }
 
-  const deleteLink = await supabase.from("session_repo_links").delete().eq("session_id", sessionResult.data);
+  const deleteLink = await supabase.from("session_repo_links").delete().eq("session_id", sessionId);
   if (deleteLink.error) {
     return { error: deleteLink.error };
   }
@@ -253,16 +246,11 @@ export async function listFacilitatorConnections(supabase: SupabaseClient, userI
   };
 }
 
-export async function getActiveConnectionIdForDefaultSession(supabase: SupabaseClient) {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { data: null, error: sessionResult.error };
-  }
-
+export async function getActiveConnectionIdForSession(supabase: SupabaseClient, sessionId: string) {
   const linkResponse = await supabase
     .from("session_repo_links")
     .select("connection_id")
-    .eq("session_id", sessionResult.data)
+    .eq("session_id", sessionId)
     .maybeSingle();
 
   if (linkResponse.error) {
@@ -282,19 +270,17 @@ export interface SessionRepoSummary {
   };
 }
 
-export async function getSessionRepoSummary(supabase: SupabaseClient): Promise<{
+export async function getSessionRepoSummary(
+  supabase: SupabaseClient,
+  sessionId: string,
+): Promise<{
   data: SessionRepoSummary | null;
   error: Error | null;
 }> {
-  const sessionResult = await getDefaultSessionId(supabase);
-  if (sessionResult.error) {
-    return { data: null, error: sessionResult.error };
-  }
-
   const linkResponse = await supabase
     .from("session_repo_links")
     .select("connection_id, linked_by")
-    .eq("session_id", sessionResult.data)
+    .eq("session_id", sessionId)
     .maybeSingle();
 
   if (linkResponse.error) {
