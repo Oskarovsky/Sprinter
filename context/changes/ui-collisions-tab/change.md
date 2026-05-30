@@ -1,7 +1,7 @@
 ---
 id: ui-collisions-tab
 title: Session AI aids progressive disclosure
-status: implementing
+status: implemented
 created: 2026-05-30
 updated: 2026-05-30
 ---
