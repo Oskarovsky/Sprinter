@@ -17,6 +17,7 @@ import {
 import { fetchGithubRepoMeta, parseGithubRepoUrl, verifyPublicGithubRepo } from "@/lib/repo/providers/github";
 import { parseLinkPostFields } from "@/lib/repo/link-request";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
+import { getDefaultSessionId } from "@/lib/session";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 
 function repoLinkErrorStatus(message: string): number {
@@ -28,6 +29,12 @@ export const POST: APIRoute = async (context) => {
   if ("response" in auth) {
     return auth.response;
   }
+
+  const sessionResult = await getDefaultSessionId(auth.supabase);
+  if (sessionResult.error) {
+    return jsonResponse({ error: sessionResult.error.message }, 500);
+  }
+  const sessionId = sessionResult.data;
 
   let body: unknown;
   try {
@@ -107,6 +114,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     const linkResult = await setSessionRepoLink(auth.supabase, {
+      sessionId,
       connectionId: connectionResult.data.id,
       linkedBy: auth.user.id,
     });
@@ -176,6 +184,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   const linkResult = await setSessionRepoLink(auth.supabase, {
+    sessionId,
     connectionId: connectionResult.data.id,
     linkedBy: auth.user.id,
   });
@@ -193,6 +202,11 @@ export const DELETE: APIRoute = async (context) => {
     return auth.response;
   }
 
+  const sessionResult = await getDefaultSessionId(auth.supabase);
+  if (sessionResult.error) {
+    return jsonResponse({ error: sessionResult.error.message }, 500);
+  }
+
   let removeFromLibrary = false;
   let connectionId: string | undefined;
 
@@ -205,6 +219,7 @@ export const DELETE: APIRoute = async (context) => {
   }
 
   const result = await disconnectSessionRepoLink(auth.supabase, {
+    sessionId: sessionResult.data,
     linkedBy: auth.user.id,
     removeFromLibrary,
     connectionId,

@@ -1,10 +1,11 @@
 import type { APIRoute } from "astro";
 import {
-  getActiveConnectionIdForDefaultSession,
+  getActiveConnectionIdForSession,
   listFacilitatorConnections,
   toPublicConnection,
 } from "@/lib/repo/connections";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
+import { getDefaultSessionId } from "@/lib/session";
 
 export const GET: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
@@ -17,7 +18,12 @@ export const GET: APIRoute = async (context) => {
     return jsonResponse({ error: connectionsResult.error.message }, 500);
   }
 
-  const activeResult = await getActiveConnectionIdForDefaultSession(auth.supabase);
+  const sessionResult = await getDefaultSessionId(auth.supabase);
+  if (sessionResult.error) {
+    return jsonResponse({ error: sessionResult.error.message }, 500);
+  }
+
+  const activeResult = await getActiveConnectionIdForSession(auth.supabase, sessionResult.data);
   if (activeResult.error) {
     return jsonResponse({ error: activeResult.error.message }, 500);
   }

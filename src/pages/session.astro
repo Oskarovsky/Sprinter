@@ -43,7 +43,10 @@ if (supabase && user) {
     needsDisplayName = true;
   }
 
-  const taskResult = await getLatestActiveTask(supabase);
+  const taskResult =
+    defaultSessionResult.data !== null
+      ? await getLatestActiveTask(supabase, defaultSessionResult.data)
+      : { data: null, error: defaultSessionResult.error };
   if (!taskResult.error && taskResult.data) {
     initialTask = taskResult.data;
 

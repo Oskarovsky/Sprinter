@@ -4,6 +4,7 @@ import {
   extractHumanStoryPoints,
   formatHumanAverage,
   getAnalystStateForTask,
+  getDefaultSessionId,
   getLatestActiveTask,
   getTask,
   listParticipation,
@@ -23,7 +24,11 @@ export const GET: APIRoute = async (context) => {
   if (taskId) {
     taskResult = await getTask(auth.supabase, taskId);
   } else {
-    taskResult = await getLatestActiveTask(auth.supabase);
+    const sessionResult = await getDefaultSessionId(auth.supabase);
+    if (sessionResult.error) {
+      return jsonResponse({ error: sessionResult.error.message }, 500);
+    }
+    taskResult = await getLatestActiveTask(auth.supabase, sessionResult.data);
   }
 
   if (taskResult.error) {

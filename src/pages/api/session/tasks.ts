@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
-import { createTask } from "@/lib/session";
+import { createTask, getDefaultSessionId } from "@/lib/session";
 
 const MAX_AFFECTED_PATHS_LENGTH = 2000;
 
@@ -34,7 +34,13 @@ export const POST: APIRoute = async (context) => {
     return jsonResponse({ error: "title is required" }, 400);
   }
 
+  const sessionResult = await getDefaultSessionId(auth.supabase);
+  if (sessionResult.error) {
+    return jsonResponse({ error: sessionResult.error.message }, 500);
+  }
+
   const result = await createTask(auth.supabase, {
+    sessionId: sessionResult.data,
     title,
     description,
     affectedPaths,
