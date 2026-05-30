@@ -156,13 +156,13 @@ export default function RepoLinkModal({ open, sessionSlug, onClose, onLinked }: 
     }
 
     if (provider === "github") {
-      window.location.href = buildGithubOAuthStartUrl(trimmedUrl);
+      window.location.href = buildGithubOAuthStartUrl(trimmedUrl, `/session/${sessionSlug}`);
       return;
     }
 
     const baseUrl = gitlabBaseUrl.trim() || DEFAULT_GITLAB_BASE;
     if (authMethod === "oauth") {
-      window.location.href = buildGitlabOAuthStartUrl(trimmedUrl, baseUrl);
+      window.location.href = buildGitlabOAuthStartUrl(trimmedUrl, baseUrl, `/session/${sessionSlug}`);
       return;
     }
 
