@@ -51,7 +51,7 @@ export async function listPlanningSessions(supabase: SessionSupabaseClient): Pro
 export async function createPlanningSession(
   supabase: SessionSupabaseClient,
   rawSlug: string,
-): Promise<SessionIdResult> {
+): Promise<{ data: PlanningSessionRow | null; error: PostgrestError | null }> {
   const slug = normalizePlanningSessionSlug(rawSlug);
   if (!slug) {
     return { data: null, error: sessionError("Invalid room slug", "VALIDATION") };
@@ -60,7 +60,7 @@ export async function createPlanningSession(
   const response: { data: unknown; error: PostgrestError | null } = await supabase
     .from("planning_sessions")
     .insert({ slug })
-    .select("id")
+    .select("id, slug, created_at")
     .single();
 
   if (response.error) {
@@ -70,7 +70,7 @@ export async function createPlanningSession(
     return { data: null, error: response.error };
   }
 
-  return { data: (response.data as { id: string }).id, error: null };
+  return { data: response.data as PlanningSessionRow, error: null };
 }
 
 export async function createTask(

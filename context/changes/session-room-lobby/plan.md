@@ -437,20 +437,20 @@ End-to-end wiring, script updates, README notes, full manual QA matrix.
 
 #### Automated
 
-- [x] 1.1 `npm run lint` passes
-- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 1.3 Migration applies on local Supabase
+- [x] 1.1 `npm run lint` passes — 2fad79d
+- [x] 1.2 `npm run test:coverage` passes with coverage table printed to stdout — 2fad79d
+- [x] 1.3 Migration applies on local Supabase — 2fad79d
 
 #### Manual
 
-- [x] 1.4 Authenticated insert into new planning_sessions slug succeeds
+- [x] 1.4 Authenticated insert into new planning_sessions slug succeeds — 2fad79d
 
 ### Phase 2: Room and session APIs
 
 #### Automated
 
-- [ ] 2.1 `npm run lint` passes
-- [ ] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
+- [x] 2.1 `npm run lint` passes
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
 
 #### Manual
 

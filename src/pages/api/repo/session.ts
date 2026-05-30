@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import { getSessionRepoSummary } from "@/lib/repo/connections";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
-import { getDefaultSessionId } from "@/lib/session";
+import { requireSessionSlugFromRequest } from "@/lib/session/resolve-session-slug";
 
 export const GET: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
@@ -9,12 +9,12 @@ export const GET: APIRoute = async (context) => {
     return auth.response;
   }
 
-  const sessionResult = await getDefaultSessionId(auth.supabase);
-  if (sessionResult.error) {
-    return jsonResponse({ error: sessionResult.error.message }, 500);
+  const sessionResolved = await requireSessionSlugFromRequest(context, auth.supabase);
+  if ("response" in sessionResolved) {
+    return sessionResolved.response;
   }
 
-  const summaryResult = await getSessionRepoSummary(auth.supabase, sessionResult.data);
+  const summaryResult = await getSessionRepoSummary(auth.supabase, sessionResolved.sessionId);
   if (summaryResult.error || !summaryResult.data) {
     return jsonResponse({ error: summaryResult.error?.message ?? "Could not load session repo status" }, 500);
   }

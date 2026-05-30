@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { castVote, isValidStoryPoint } from "@/lib/session";
+import { validateTaskSessionSlugWhenPresent } from "@/lib/session/resolve-session-slug";
 
 export const POST: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
@@ -20,6 +21,16 @@ export const POST: APIRoute = async (context) => {
 
   if (!taskId) {
     return jsonResponse({ error: "taskId is required" }, 400);
+  }
+
+  const sessionValidation = await validateTaskSessionSlugWhenPresent(
+    context,
+    auth.supabase,
+    taskId,
+    body as Record<string, unknown>,
+  );
+  if ("response" in sessionValidation) {
+    return sessionValidation.response;
   }
 
   if (typeof storyPoints !== "number" || !isValidStoryPoint(storyPoints)) {
