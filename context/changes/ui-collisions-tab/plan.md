@@ -206,11 +206,11 @@ None — client-only UI change.
 
 #### Automated
 
-- [x] 2.1 `npm run lint` passes
-- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout
-- [x] 2.3 `npm run build` succeeds
+- [x] 2.1 `npm run lint` passes — 966c741
+- [x] 2.2 `npm run test:coverage` passes with coverage table printed to stdout — 966c741
+- [x] 2.3 `npm run build` succeeds — 966c741
 
 #### Manual
 
-- [x] 2.4 Use this task switches to Create tab with prefilled fields
-- [x] 2.5 US-02 privacy + poker regression smoke (two-browser optional)
+- [x] 2.4 Use this task switches to Create tab with prefilled fields — 966c741
+- [x] 2.5 US-02 privacy + poker regression smoke (two-browser optional) — 966c741
