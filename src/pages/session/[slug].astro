@@ -1,0 +1,98 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import SessionRoom from "@/components/session/SessionRoom";
+import { loadSessionRoomPageData } from "@/lib/session/room-page-data";
+import { createClient } from "@/lib/supabase";
+
+const { user } = Astro.locals;
+const sessionSlug = Astro.params.slug ?? "";
+
+let pageData = {
+  sessionSlug,
+  planningSessionId: null as string | null,
+  realtimeAccessToken: null as string | null,
+  initialDisplayName: null as string | null,
+  needsDisplayName: true,
+  initialTask: null,
+  initialParticipation: [],
+  initialHumanAverageFormatted: null as string | null,
+  initialAnalyst: null,
+  initialAnalystPending: false,
+  notFound: true,
+};
+
+const supabase = createClient(Astro.request.headers, Astro.cookies);
+if (supabase && user && sessionSlug) {
+  const sessionResult = await supabase.auth.getSession();
+  const realtimeAccessToken = sessionResult.data.session?.access_token ?? null;
+  pageData = await loadSessionRoomPageData(supabase, user.id, sessionSlug, realtimeAccessToken);
+}
+
+if (pageData.notFound) {
+  Astro.response.status = 404;
+}
+---
+
+<Layout title={pageData.notFound ? "Room not found" : `Planning — ${sessionSlug}`}>
+  <div class="bg-cosmic flex min-h-screen items-center justify-center p-4">
+    <div
+      class="w-full max-w-xl rounded-2xl border border-white/10 bg-white/10 p-8 text-center text-white backdrop-blur-xl"
+    >
+      {
+        pageData.notFound ? (
+          <>
+            <h1 class="mb-4 text-2xl font-bold text-white">Room not found</h1>
+            <p class="text-sm text-blue-100/70">
+              No planning room matches <span class="font-mono text-white">{sessionSlug}</span>.
+            </p>
+            <p class="mt-6">
+              <a
+                href="/session"
+                class="rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium transition-colors hover:bg-purple-500/30"
+              >
+                Back to planning rooms
+              </a>
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 class="mb-2 bg-gradient-to-r from-blue-200 to-purple-200 bg-clip-text text-3xl font-bold text-transparent">
+              {sessionSlug}
+            </h1>
+            <p class="text-sm text-blue-100/60">
+              <a href="/session" class="text-purple-300 hover:underline">
+                ← All rooms
+              </a>
+            </p>
+
+            {user ? (
+              <SessionRoom
+                userId={user.id}
+                initialDisplayName={pageData.initialDisplayName}
+                needsDisplayName={pageData.needsDisplayName}
+                initialTask={pageData.initialTask}
+                initialParticipation={pageData.initialParticipation}
+                initialHumanAverageFormatted={pageData.initialHumanAverageFormatted}
+                initialAnalyst={pageData.initialAnalyst}
+                initialAnalystPending={pageData.initialAnalystPending}
+                realtimeAccessToken={pageData.realtimeAccessToken}
+                planningSessionId={pageData.planningSessionId}
+                sessionSlug={sessionSlug}
+                client:load
+              />
+            ) : null}
+
+            <p class="mt-6">
+              <a
+                href="/dashboard"
+                class="rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm transition-colors hover:bg-white/20"
+              >
+                Back to dashboard
+              </a>
+            </p>
+          </>
+        )
+      }
+    </div>
+  </div>
+</Layout>
