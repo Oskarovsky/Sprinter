@@ -13,6 +13,7 @@ export interface Task {
   session_id: string;
   title: string;
   description: string | null;
+  affected_paths: string | null;
   created_by: string;
   status: TaskStatus;
   revealed_at: string | null;
