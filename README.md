@@ -127,7 +127,7 @@ Or push to a linked cloud project:
 npx supabase db push
 ```
 
-Tables: `planning_sessions` (single default room), `profiles`, `tasks`, `votes`, plus the `vote_participation` view for blind voting.
+Tables: `planning_sessions` (multi-room; seed row `default`), `profiles`, `tasks`, `votes`, plus the `vote_participation` view for blind voting.
 
 ### Using a cloud Supabase project instead
 
@@ -167,20 +167,28 @@ Users can then sign in immediately after sign-up without clicking a confirmation
 | `/api/auth/google`    | Starts Google OAuth (redirects to Google)                               |
 | `/api/auth/callback`  | OAuth callback — exchanges code for session                             |
 | `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
-| `/session`              | Planning poker room (protected)                                           |
+| `/session`            | Planning room lobby — list, join, or create rooms (protected)             |
+| `/session/[slug]`     | Planning poker room for a kebab-case slug (protected)                     |
+| `/session/[slug]/new` | Create a task in a room (Create task \| Sprinter Draft tabs)              |
+
+> **Note:** Multi-room lobby and post-reveal new-task flow extend the original MVP PRD (single implicit room). The seeded `default` room remains available via the lobby.
 
 ### Session API routes
 
+Session and repo JSON routes require a `sessionSlug` query parameter (or `sessionSlug` in the POST body for some repo routes) to scope reads and writes to a planning room.
+
 | Route                                      | Method | Description                                      |
 | ------------------------------------------ | ------ | ------------------------------------------------ |
-| `/api/session/state`                       | GET    | Latest or specified task + masked participation  |
+| `/api/session/rooms`                       | GET    | List planning rooms (`{ rooms: [{ id, slug, createdAt }] }`) |
+| `/api/session/rooms`                       | POST   | Create room (`{ slug }` → `{ room }`; 409 if duplicate) |
+| `/api/session/state?sessionSlug=`          | GET    | Latest or specified task + masked participation  |
 | `/api/session/participation?taskId=`       | GET    | Masked participation for a task                  |
 | `/api/session/profile`                     | GET    | Current user display name                        |
 | `/api/session/profile`                     | PATCH  | Set display name (`{ displayName }`)             |
-| `/api/session/tasks`                       | POST   | Create task (`{ title, description?, affectedPaths? }`) |
-| `/api/session/tasks/:taskId/start-voting`  | POST   | Move task to voting (creator only)               |
-| `/api/session/vote`                        | POST   | Cast/change vote (`{ taskId, storyPoints }`)     |
-| `/api/session/reveal`                      | POST   | Reveal votes (`{ taskId }`, creator only)        |
+| `/api/session/tasks?sessionSlug=`          | POST   | Create task (`{ title, description?, affectedPaths? }`) |
+| `/api/session/tasks/:taskId/start-voting?sessionSlug=` | POST | Move task to voting (creator only)     |
+| `/api/session/vote?sessionSlug=`           | POST   | Cast/change vote (`{ taskId, storyPoints }`)     |
+| `/api/session/reveal?sessionSlug=`        | POST   | Reveal votes (`{ taskId }`, creator only)        |
 
 ### Repository & Sprinter Analyst API routes
 
@@ -188,10 +196,10 @@ Requires authentication. OAuth tokens and PAT values are stored server-side only
 
 | Route                                      | Method | Description                                                                 |
 | ------------------------------------------ | ------ | --------------------------------------------------------------------------- |
-| `/api/repo/connections`                    | GET    | Facilitator repo library + active session connection id                     |
-| `/api/repo/session`                        | GET    | Active repo summary for the default planning session                        |
-| `/api/repo/link`                           | POST   | Link repo to session (`{ provider, repoUrl, accessMode, gitlabBaseUrl?, accessToken? }`) |
-| `/api/repo/link`                           | DELETE | Disconnect session link (`{ removeFromLibrary?, connectionId? }`)           |
+| `/api/repo/connections?sessionSlug=`       | GET    | Facilitator repo library + active connection for the room                   |
+| `/api/repo/session?sessionSlug=`           | GET    | Active repo summary for the planning room                                   |
+| `/api/repo/link?sessionSlug=`              | POST   | Link repo to room (`{ provider, repoUrl, accessMode, gitlabBaseUrl?, accessToken? }`) |
+| `/api/repo/link?sessionSlug=`              | DELETE | Disconnect room link (`{ removeFromLibrary?, connectionId?, sessionSlug? }`) |
 | `/api/repo/oauth/github/start`             | GET    | Start GitHub OAuth for private repos (redirect)                             |
 | `/api/repo/oauth/github/callback`          | GET    | GitHub OAuth callback                                                       |
 | `/api/repo/oauth/gitlab/start`             | GET    | Start GitLab OAuth for private repos (redirect)                             |
