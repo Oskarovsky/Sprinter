@@ -1,6 +1,8 @@
 import type { APIRoute } from "astro";
+import { insertAnalystPending, runAnalystForTask } from "@/lib/repo/run-analyst";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { startVoting } from "@/lib/session";
+import { createServiceRoleClient } from "@/lib/supabase-service";
 
 export const POST: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
@@ -20,6 +22,24 @@ export const POST: APIRoute = async (context) => {
 
   if (!result.data) {
     return jsonResponse({ error: "Only the task creator can start voting" }, 403);
+  }
+
+  const serviceClient = createServiceRoleClient();
+  if (serviceClient) {
+    await insertAnalystPending(serviceClient, taskId);
+    const analystJob = runAnalystForTask({
+      taskId,
+      sessionId: result.data.session_id,
+      serviceClient,
+    });
+    const waitUntil = context.locals.cfContext?.waitUntil.bind(context.locals.cfContext);
+    if (typeof waitUntil === "function") {
+      waitUntil(analystJob);
+    } else if (import.meta.env.DEV) {
+      await analystJob;
+    } else {
+      void analystJob;
+    }
   }
 
   return jsonResponse({ task: result.data }, 200);

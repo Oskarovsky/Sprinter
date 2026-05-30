@@ -60,4 +60,9 @@ export async function listRevealedVotes(supabase: SessionSupabaseClient, taskId:
   return { data: response.data as VoteParticipation[] | null, error: response.error };
 }
 
+/** Story points from human participants only — excludes Sprinter Analyst reference votes. */
+export function extractHumanStoryPoints(participation: VoteParticipation[]): number[] {
+  return participation.map((row) => row.story_points).filter((value): value is number => value !== null);
+}
+
 export type { Vote, VoteParticipation };

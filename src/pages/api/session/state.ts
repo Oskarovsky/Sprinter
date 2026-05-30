@@ -1,7 +1,9 @@
 import type { APIRoute } from "astro";
 import {
   computeHumanAverage,
+  extractHumanStoryPoints,
   formatHumanAverage,
+  getAnalystStateForTask,
   getLatestActiveTask,
   getTask,
   listParticipation,
@@ -30,7 +32,17 @@ export const GET: APIRoute = async (context) => {
 
   const task = taskResult.data;
   if (!task) {
-    return jsonResponse({ task: null, participation: [], humanAverage: null, humanAverageFormatted: null }, 200);
+    return jsonResponse(
+      {
+        task: null,
+        participation: [],
+        humanAverage: null,
+        humanAverageFormatted: null,
+        analyst: null,
+        analystPending: false,
+      },
+      200,
+    );
   }
 
   const participationResult = await listParticipation(auth.supabase, task.id);
@@ -41,13 +53,20 @@ export const GET: APIRoute = async (context) => {
   let participation = participationResult.data ?? [];
   let humanAverage: number | null = null;
   let humanAverageFormatted: string | null = null;
+  let analyst = null;
+  let analystPending = false;
 
   if (task.status === "revealed") {
     participation = sortParticipationByPoints(participation);
-    const points = participation.map((row) => row.story_points).filter((value): value is number => value !== null);
-    humanAverage = computeHumanAverage(points);
+    humanAverage = computeHumanAverage(extractHumanStoryPoints(participation));
     humanAverageFormatted = humanAverage !== null ? formatHumanAverage(humanAverage) : null;
   }
 
-  return jsonResponse({ task, participation, humanAverage, humanAverageFormatted }, 200);
+  if (task.status === "voting" || task.status === "revealed") {
+    const analystState = await getAnalystStateForTask(auth.supabase, task.id, task.status);
+    analyst = analystState.analyst;
+    analystPending = analystState.analystPending;
+  }
+
+  return jsonResponse({ task, participation, humanAverage, humanAverageFormatted, analyst, analystPending }, 200);
 };

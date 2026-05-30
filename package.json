@@ -12,7 +12,9 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "smoke:gitlab-oauth": "npx tsx scripts/gitlab-oauth-smoke.ts",
+    "smoke:gitlab-oauth:verify": "npx tsx scripts/gitlab-oauth-smoke.ts --verify"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.8",

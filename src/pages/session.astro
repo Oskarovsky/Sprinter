@@ -4,6 +4,7 @@ import SessionRoom from "@/components/session/SessionRoom";
 import {
   computeHumanAverage,
   formatHumanAverage,
+  getAnalystStateForTask,
   getDefaultSessionId,
   getDisplayName,
   getLatestActiveTask,
@@ -11,6 +12,7 @@ import {
   listParticipation,
   sortParticipationByPoints,
 } from "@/lib/session";
+import type { AnalystVotePublic } from "@/lib/repo/types";
 import type { Task, VoteParticipation } from "@/lib/session/types";
 import { createClient } from "@/lib/supabase";
 
@@ -18,6 +20,8 @@ const { user } = Astro.locals;
 let initialTask: Task | null = null;
 let initialParticipation: VoteParticipation[] = [];
 let initialHumanAverageFormatted: string | null = null;
+let initialAnalyst: AnalystVotePublic | null = null;
+let initialAnalystPending = false;
 let initialDisplayName: string | null = null;
 let needsDisplayName = false;
 let realtimeAccessToken: string | null = null;
@@ -57,6 +61,12 @@ if (supabase && user) {
         const average = computeHumanAverage(points);
         initialHumanAverageFormatted = average !== null ? formatHumanAverage(average) : null;
       }
+
+      if (taskResult.data.status === "voting" || taskResult.data.status === "revealed") {
+        const analystState = await getAnalystStateForTask(supabase, taskResult.data.id, taskResult.data.status);
+        initialAnalyst = analystState.analyst;
+        initialAnalystPending = analystState.analystPending;
+      }
     }
   }
 }
@@ -86,6 +96,8 @@ if (supabase && user) {
             initialTask={initialTask}
             initialParticipation={initialParticipation}
             initialHumanAverageFormatted={initialHumanAverageFormatted}
+            initialAnalyst={initialAnalyst}
+            initialAnalystPending={initialAnalystPending}
             realtimeAccessToken={realtimeAccessToken}
             planningSessionId={planningSessionId}
             client:load

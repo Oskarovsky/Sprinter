@@ -69,7 +69,7 @@ const READY_FOR_PLAN = {
   "S-01": "no",
   "S-02": "no",
   "S-03": "no",
-  "S-04": "no",
+  "S-04": "yes",
 };
 
 /** @typedef {{ id: string, changeId: string, outcome: string, prdRefs: string, prerequisites: string, risk: string, unlocks: string, unknowns: string, status: string, labels: string[], blockedBy: string[] }} RoadmapItem */
