@@ -7,7 +7,7 @@ import type { Task, VoteParticipation } from "@/lib/session/types";
 import AnalystPendingIndicator from "@/components/session/AnalystPendingIndicator";
 import AnalystReferenceCard from "@/components/session/AnalystReferenceCard";
 import RepoLinkModal from "@/components/session/RepoLinkModal";
-import SprinterDraftPanel from "@/components/session/SprinterDraftPanel";
+import TaskHistoryMock from "@/components/session/TaskHistoryMock";
 
 interface SessionStateResponse {
   task: Task | null;
@@ -29,6 +29,12 @@ interface Props {
   initialAnalystPending: boolean;
   realtimeAccessToken: string | null;
   planningSessionId: string | null;
+  sessionSlug: string;
+}
+
+function withSessionSlug(path: string, sessionSlug: string, extra?: Record<string, string>): string {
+  const params = new URLSearchParams({ sessionSlug, ...extra });
+  return `${path}?${params.toString()}`;
 }
 
 function formatStoryPoints(points: number | null, isRevealed: boolean): string {
@@ -106,6 +112,7 @@ export default function SessionRoom({
   initialAnalystPending,
   realtimeAccessToken,
   planningSessionId,
+  sessionSlug,
 }: Props) {
   const [needsDisplayName, setNeedsDisplayName] = useState(initialNeedsDisplayName);
   const [displayNameInput, setDisplayNameInput] = useState(initialDisplayName ?? "");
@@ -118,10 +125,6 @@ export default function SessionRoom({
   const [initialRepoQuery] = useState(readInitialRepoQuery);
   const [bannerError, setBannerError] = useState<string | null>(initialRepoQuery.repoError);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const [newTitle, setNewTitle] = useState("");
-  const [newDescription, setNewDescription] = useState("");
-  const [newAffectedPaths, setNewAffectedPaths] = useState("");
   const [analyst, setAnalyst] = useState<AnalystVotePublic | null>(initialAnalyst);
   const [analystPending, setAnalystPending] = useState(initialAnalystPending);
   const [repoStatus, setRepoStatus] = useState<SessionRepoStatus | null>(null);
@@ -133,39 +136,44 @@ export default function SessionRoom({
   const isDraft = task?.status === "draft";
   const ownVote = participation.find((row) => row.user_id === userId)?.story_points ?? null;
   const showLiveBadge = Boolean(planningSessionId);
+  const showResultsPanel = Boolean(task && (isVoting || isRevealed));
+  const newTaskPath = `/session/${sessionSlug}/new`;
 
   const refreshRepoStatus = useCallback(async () => {
     try {
-      const status = await fetchSessionRepoStatus();
+      const status = await fetchSessionRepoStatus(sessionSlug);
       setRepoStatus(status);
     } catch {
       /* repo badge is optional — do not block poker flows */
     }
-  }, []);
+  }, [sessionSlug]);
 
-  const refetchState = useCallback(async (taskId?: string) => {
-    const query = taskId ? `?taskId=${encodeURIComponent(taskId)}` : "";
-    const response = await fetch(`/api/session/state${query}`);
-    if (!response.ok) {
-      setBannerError(await readError(response));
-      return;
-    }
+  const refetchState = useCallback(
+    async (taskId?: string) => {
+      const extra = taskId ? { taskId } : undefined;
+      const response = await fetch(withSessionSlug("/api/session/state", sessionSlug, extra));
+      if (!response.ok) {
+        setBannerError(await readError(response));
+        return;
+      }
 
-    const data = (await response.json()) as SessionStateResponse;
-    setTask(data.task);
-    setParticipation(data.participation);
-    setHumanAverageFormatted(data.humanAverageFormatted);
-    setAnalyst(data.analyst);
-    setAnalystPending(data.analystPending);
-    setBannerError(null);
-  }, []);
+      const data = (await response.json()) as SessionStateResponse;
+      setTask(data.task);
+      setParticipation(data.participation);
+      setHumanAverageFormatted(data.humanAverageFormatted);
+      setAnalyst(data.analyst);
+      setAnalystPending(data.analystPending);
+      setBannerError(null);
+    },
+    [sessionSlug],
+  );
 
   useEffect(() => {
     let cancelled = false;
 
     void (async () => {
       try {
-        const status = await fetchSessionRepoStatus();
+        const status = await fetchSessionRepoStatus(sessionSlug);
         if (!cancelled) {
           setRepoStatus(status);
         }
@@ -177,7 +185,7 @@ export default function SessionRoom({
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sessionSlug]);
 
   useEffect(() => {
     const taskId = task?.id;
@@ -262,38 +270,6 @@ export default function SessionRoom({
     }
   }
 
-  async function createTask(event: React.SubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setBannerError(null);
-    try {
-      const response = await fetch("/api/session/tasks", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: newTitle,
-          description: newDescription || undefined,
-          affectedPaths: newAffectedPaths.trim() || undefined,
-        }),
-      });
-      if (!response.ok) {
-        setBannerError(await readError(response));
-        return;
-      }
-      const data = (await response.json()) as { task: Task };
-      setTask(data.task);
-      setParticipation([]);
-      setHumanAverageFormatted(null);
-      setAnalyst(null);
-      setAnalystPending(false);
-      setNewTitle("");
-      setNewDescription("");
-      setNewAffectedPaths("");
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
   async function startVoting() {
     if (!task) {
       return;
@@ -301,7 +277,9 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch(`/api/session/tasks/${task.id}/start-voting`, { method: "POST" });
+      const response = await fetch(withSessionSlug(`/api/session/tasks/${task.id}/start-voting`, sessionSlug), {
+        method: "POST",
+      });
       if (!response.ok) {
         setBannerError(await readError(response));
         return;
@@ -321,10 +299,10 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch("/api/session/vote", {
+      const response = await fetch(withSessionSlug("/api/session/vote", sessionSlug), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId: task.id, storyPoints }),
+        body: JSON.stringify({ taskId: task.id, storyPoints, sessionSlug }),
       });
       if (!response.ok) {
         setBannerError(await readError(response));
@@ -343,10 +321,10 @@ export default function SessionRoom({
     setIsSubmitting(true);
     setBannerError(null);
     try {
-      const response = await fetch("/api/session/reveal", {
+      const response = await fetch(withSessionSlug("/api/session/reveal", sessionSlug), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ taskId: task.id }),
+        body: JSON.stringify({ taskId: task.id, sessionSlug }),
       });
       if (!response.ok) {
         setBannerError(await readError(response));
@@ -396,8 +374,6 @@ export default function SessionRoom({
     );
   }
 
-  const showCreateForm = !task || isRevealed;
-
   return (
     <section aria-labelledby="session-room-heading" className="mt-8 space-y-6 text-left">
       <div className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-white/10 bg-white/5 p-6">
@@ -440,6 +416,7 @@ export default function SessionRoom({
       <RepoLinkModal
         key={repoModalOpen ? "repo-modal-open" : "repo-modal-closed"}
         open={repoModalOpen}
+        sessionSlug={sessionSlug}
         onClose={() => {
           setRepoModalOpen(false);
         }}
@@ -454,64 +431,16 @@ export default function SessionRoom({
         </p>
       ) : null}
 
-      {showCreateForm ? (
-        <>
-          <SprinterDraftPanel
-            onApplyDraft={({ title, description }) => {
-              setNewTitle(title);
-              setNewDescription(description);
-              setBannerError(null);
-            }}
-          />
-          <form onSubmit={createTask} className="space-y-3 rounded-xl border border-white/10 bg-white/5 p-6">
-            <h3 className="text-sm font-medium text-white">{isRevealed ? "Start next task" : "Create a task"}</h3>
-            <label className="block text-sm text-blue-100/90">
-              Title
-              <input
-                type="text"
-                value={newTitle}
-                onChange={(e) => {
-                  setNewTitle(e.target.value);
-                }}
-                required
-                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
-              />
-            </label>
-            <label className="block text-sm text-blue-100/90">
-              Description (optional)
-              <textarea
-                value={newDescription}
-                onChange={(e) => {
-                  setNewDescription(e.target.value);
-                }}
-                rows={2}
-                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-white"
-              />
-            </label>
-            <label className="block text-sm text-blue-100/90">
-              Affected paths (optional)
-              <textarea
-                value={newAffectedPaths}
-                onChange={(e) => {
-                  setNewAffectedPaths(e.target.value);
-                }}
-                rows={3}
-                placeholder={"src/lib/session/\nsrc/pages/api/session/"}
-                className="mt-1 w-full rounded-lg border border-white/20 bg-white/10 px-3 py-2 font-mono text-sm text-white"
-              />
-              <span className="mt-1 block text-xs text-blue-100/50">
-                One path or glob per line — guides Sprinter Analyst.
-              </span>
-            </label>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500/30 disabled:opacity-50"
-            >
-              Create task
-            </button>
-          </form>
-        </>
+      {!task ? (
+        <div className="rounded-xl border border-white/10 bg-white/5 p-6 text-center">
+          <p className="text-sm text-blue-100/70">No active task in this room yet.</p>
+          <a
+            href={newTaskPath}
+            className="mt-4 inline-block rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500/30"
+          >
+            Create first task
+          </a>
+        </div>
       ) : null}
 
       {task && isDraft && isCreator ? (
@@ -567,7 +496,7 @@ export default function SessionRoom({
         </div>
       ) : null}
 
-      {task && (isVoting || isRevealed) ? (
+      {showResultsPanel ? (
         <div className="rounded-xl border border-white/10 bg-white/5 p-6">
           <h3 className="text-sm font-medium text-blue-100/90">Who voted</h3>
           {isRevealed && humanAverageFormatted ? (
@@ -602,6 +531,19 @@ export default function SessionRoom({
               })}
             </ul>
           )}
+        </div>
+      ) : null}
+
+      {isRevealed ? <TaskHistoryMock /> : null}
+
+      {isRevealed && isCreator ? (
+        <div className="text-center">
+          <a
+            href={newTaskPath}
+            className="inline-block rounded-lg border border-purple-400/40 bg-purple-500/20 px-4 py-2 text-sm font-medium text-white hover:bg-purple-500/30"
+          >
+            Start next task
+          </a>
         </div>
       ) : null}
     </section>

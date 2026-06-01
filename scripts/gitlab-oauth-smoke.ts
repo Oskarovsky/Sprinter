@@ -20,6 +20,7 @@
  *   GITLAB_BASE_URL=https://gitlab.vodeno.net
  *   GITLAB_REPO_URL=https://gitlab.vodeno.net/group/project
  *   GITLAB_SMOKE_EMAIL / GITLAB_SMOKE_PASSWORD (default: session-smoke-a@gmail.com)
+ *   GITLAB_SMOKE_SESSION_SLUG — room slug for OAuth return + DB link check (default: `default`)
  *   SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY (for --verify DB checks)
  */
 import { readFileSync } from "node:fs";
@@ -130,12 +131,13 @@ async function fetchOAuthStartUrl(
   cookieHeader: string,
   gitlabBaseUrl: string,
   repoUrl: string,
+  sessionSlug: string,
 ): Promise<string> {
   const params = new URLSearchParams({
     accessMode: "private",
     gitlabBaseUrl,
     repoUrl,
-    returnPath: "/session",
+    returnPath: `/session/${sessionSlug}`,
   });
 
   const response = await fetch(`${appUrl}/api/repo/oauth/gitlab/start?${params.toString()}`, {
@@ -182,6 +184,7 @@ async function verifyDatabase(
   gitlabBaseUrl: string,
   repoFullName: string,
   userId: string,
+  sessionSlug: string,
 ) {
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
@@ -223,8 +226,8 @@ async function verifyDatabase(
   assert(tokenRow.gitlab_pat === false, "OAuth token stored with gitlab_pat=false");
   assert((tokenRow.access_token ?? "").length > 0, "access_token persisted (service role only)");
 
-  const sessions = await admin.from("planning_sessions").select("id").eq("slug", "default").maybeSingle();
-  assert(!sessions.error && sessions.data !== null, "default planning session exists");
+  const sessions = await admin.from("planning_sessions").select("id").eq("slug", sessionSlug).maybeSingle();
+  assert(!sessions.error && sessions.data !== null, `planning session "${sessionSlug}" exists`);
   const sessionRow = sessions.data;
   if (!sessionRow) {
     throw new Error("session row missing after assert");
@@ -269,11 +272,13 @@ async function runPreflight(env: Record<string, string>, verifyOnly: boolean) {
   const clientId = env.GITLAB_CLIENT_ID ?? "";
   const clientSecret = env.GITLAB_CLIENT_SECRET ?? "";
   const serviceRoleKey = env.SUPABASE_SERVICE_ROLE_KEY ?? "";
+  const sessionSlug = env.GITLAB_SMOKE_SESSION_SLUG ?? "default";
 
   console.log("\nGitLab OAuth smoke test (S-04 Phase 2)");
   console.log(`  App:     ${appUrl}`);
   console.log(`  GitLab:  ${gitlabBaseUrl}`);
-  console.log(`  Repo:    ${repoUrl}\n`);
+  console.log(`  Repo:    ${repoUrl}`);
+  console.log(`  Room:    ${sessionSlug}\n`);
 
   console.log("1. Environment");
   assert(clientId.length > 0, "GITLAB_CLIENT_ID is set");
@@ -289,6 +294,7 @@ async function runPreflight(env: Record<string, string>, verifyOnly: boolean) {
       gitlabBaseUrl,
       repoFullNameFromUrl(repoUrl, gitlabBaseUrl),
       userId,
+      sessionSlug,
     );
     console.log("\n✅ GitLab OAuth verify passed\n");
     return;
@@ -300,13 +306,13 @@ async function runPreflight(env: Record<string, string>, verifyOnly: boolean) {
 
   console.log("\n3. OAuth start route (requires dev server)");
   const cookieHeader = await signInViaApp(appUrl, email, password);
-  const authorizeUrl = await fetchOAuthStartUrl(appUrl, cookieHeader, gitlabBaseUrl, repoUrl);
+  const authorizeUrl = await fetchOAuthStartUrl(appUrl, cookieHeader, gitlabBaseUrl, repoUrl, sessionSlug);
   validateAuthorizeUrl(authorizeUrl, gitlabBaseUrl, clientId);
 
   console.log("\n4. Manual step — complete OAuth in browser");
   console.log("   Open this URL while logged into GitLab with access to the repo:\n");
   console.log(`   ${authorizeUrl}\n`);
-  console.log("   Expected: redirect to /session?repoLinked=1");
+  console.log(`   Expected: redirect to /session/${sessionSlug}?repoLinked=1`);
   console.log("   Then run:  npx tsx scripts/gitlab-oauth-smoke.ts --verify\n");
   console.log("✅ GitLab OAuth preflight passed\n");
 }

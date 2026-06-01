@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { revealTask } from "@/lib/session";
+import { validateTaskSessionSlugWhenPresent } from "@/lib/session/resolve-session-slug";
 
 export const POST: APIRoute = async (context) => {
   const auth = await requireSessionAuth(context);
@@ -18,6 +19,16 @@ export const POST: APIRoute = async (context) => {
   const taskId = typeof (body as { taskId?: unknown }).taskId === "string" ? (body as { taskId: string }).taskId : "";
   if (!taskId) {
     return jsonResponse({ error: "taskId is required" }, 400);
+  }
+
+  const sessionValidation = await validateTaskSessionSlugWhenPresent(
+    context,
+    auth.supabase,
+    taskId,
+    body as Record<string, unknown>,
+  );
+  if ("response" in sessionValidation) {
+    return sessionValidation.response;
   }
 
   const result = await revealTask(auth.supabase, { taskId, actorId: auth.user.id });
