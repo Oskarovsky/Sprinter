@@ -1,9 +1,10 @@
 ---
 id: session-room-lobby
 title: Session room lobby and multi-room flow
-status: implemented
+status: archived
 created: 2026-05-30
-updated: 2026-05-30
+updated: 2026-06-01
+archived_at: 2026-06-01T19:04:08Z
 ---
 
 ## Notes
