@@ -17,6 +17,7 @@ import {
 import { fetchGithubRepoMeta, parseGithubRepoUrl, verifyPublicGithubRepo } from "@/lib/repo/providers/github";
 import { parseLinkPostFields } from "@/lib/repo/link-request";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
+import { requireSessionSlugFromRequest } from "@/lib/session/resolve-session-slug";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 
 function repoLinkErrorStatus(message: string): number {
@@ -28,6 +29,12 @@ export const POST: APIRoute = async (context) => {
   if ("response" in auth) {
     return auth.response;
   }
+
+  const sessionResolved = await requireSessionSlugFromRequest(context, auth.supabase);
+  if ("response" in sessionResolved) {
+    return sessionResolved.response;
+  }
+  const sessionId = sessionResolved.sessionId;
 
   let body: unknown;
   try {
@@ -107,6 +114,7 @@ export const POST: APIRoute = async (context) => {
     }
 
     const linkResult = await setSessionRepoLink(auth.supabase, {
+      sessionId,
       connectionId: connectionResult.data.id,
       linkedBy: auth.user.id,
     });
@@ -176,6 +184,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   const linkResult = await setSessionRepoLink(auth.supabase, {
+    sessionId,
     connectionId: connectionResult.data.id,
     linkedBy: auth.user.id,
   });
@@ -195,16 +204,28 @@ export const DELETE: APIRoute = async (context) => {
 
   let removeFromLibrary = false;
   let connectionId: string | undefined;
+  let parsedBody: Record<string, unknown> | undefined;
 
   try {
-    const body = (await context.request.json()) as { removeFromLibrary?: unknown; connectionId?: unknown };
+    const body = (await context.request.json()) as {
+      removeFromLibrary?: unknown;
+      connectionId?: unknown;
+      sessionSlug?: unknown;
+    };
+    parsedBody = body;
     removeFromLibrary = body.removeFromLibrary === true;
     connectionId = typeof body.connectionId === "string" ? body.connectionId : undefined;
   } catch {
     /* empty body is fine */
   }
 
+  const sessionResolved = await requireSessionSlugFromRequest(context, auth.supabase, parsedBody);
+  if ("response" in sessionResolved) {
+    return sessionResolved.response;
+  }
+
   const result = await disconnectSessionRepoLink(auth.supabase, {
+    sessionId: sessionResolved.sessionId,
     linkedBy: auth.user.id,
     removeFromLibrary,
     connectionId,

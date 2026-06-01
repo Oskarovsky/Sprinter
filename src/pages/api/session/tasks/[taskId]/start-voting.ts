@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { insertAnalystPending, runAnalystForTask } from "@/lib/repo/run-analyst";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { startVoting } from "@/lib/session";
+import { validateTaskSessionSlugWhenPresent } from "@/lib/session/resolve-session-slug";
 import { createServiceRoleClient } from "@/lib/supabase-service";
 
 export const POST: APIRoute = async (context) => {
@@ -13,6 +14,11 @@ export const POST: APIRoute = async (context) => {
   const taskId = context.params.taskId;
   if (!taskId) {
     return jsonResponse({ error: "taskId is required" }, 400);
+  }
+
+  const sessionValidation = await validateTaskSessionSlugWhenPresent(context, auth.supabase, taskId);
+  if ("response" in sessionValidation) {
+    return sessionValidation.response;
   }
 
   const result = await startVoting(auth.supabase, { taskId, actorId: auth.user.id });

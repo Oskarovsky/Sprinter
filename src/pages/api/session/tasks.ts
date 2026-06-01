@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { jsonResponse, requireSessionAuth } from "@/lib/session/api-json";
 import { createTask } from "@/lib/session";
+import { requireSessionSlugFromRequest } from "@/lib/session/resolve-session-slug";
 
 const MAX_AFFECTED_PATHS_LENGTH = 2000;
 
@@ -15,6 +16,11 @@ export const POST: APIRoute = async (context) => {
     body = await context.request.json();
   } catch {
     return jsonResponse({ error: "Invalid JSON body" }, 400);
+  }
+
+  const sessionResolved = await requireSessionSlugFromRequest(context, auth.supabase, body as Record<string, unknown>);
+  if ("response" in sessionResolved) {
+    return sessionResolved.response;
   }
 
   const title = typeof (body as { title?: unknown }).title === "string" ? (body as { title: string }).title.trim() : "";
@@ -35,6 +41,7 @@ export const POST: APIRoute = async (context) => {
   }
 
   const result = await createTask(auth.supabase, {
+    sessionId: sessionResolved.sessionId,
     title,
     description,
     affectedPaths,

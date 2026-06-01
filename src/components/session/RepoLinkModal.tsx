@@ -12,6 +12,7 @@ const DEFAULT_GITLAB_BASE = "https://gitlab.com";
 
 interface Props {
   open: boolean;
+  sessionSlug: string;
   onClose: () => void;
   onLinked: () => void;
 }
@@ -20,7 +21,7 @@ function providerLabel(provider: PublicRepoConnection["provider"]): string {
   return provider === "github" ? "GitHub" : "GitLab";
 }
 
-export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
+export default function RepoLinkModal({ open, sessionSlug, onClose, onLinked }: Props) {
   const [connections, setConnections] = useState<PublicRepoConnection[]>([]);
   const [activeConnectionId, setActiveConnectionId] = useState<string | null>(null);
   const [libraryReady, setLibraryReady] = useState(false);
@@ -37,13 +38,13 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
   const loadConnections = useCallback(async () => {
     setError(null);
     try {
-      const data = await fetchRepoConnections();
+      const data = await fetchRepoConnections(sessionSlug);
       setConnections(data.connections);
       setActiveConnectionId(data.activeConnectionId);
     } catch (loadError) {
       setError(loadError instanceof Error ? loadError.message : "Could not load repository library");
     }
-  }, []);
+  }, [sessionSlug]);
 
   useEffect(() => {
     if (!open) {
@@ -54,7 +55,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
 
     void (async () => {
       try {
-        const data = await fetchRepoConnections();
+        const data = await fetchRepoConnections(sessionSlug);
         if (cancelled) {
           return;
         }
@@ -75,7 +76,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [open]);
+  }, [open, sessionSlug]);
 
   useEffect(() => {
     if (!open) {
@@ -96,7 +97,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
     setIsLoading(true);
     setError(null);
     try {
-      await linkRepo({
+      await linkRepo(sessionSlug, {
         provider: connection.provider,
         repoUrl: connection.repoUrl,
         accessMode: connection.accessMode,
@@ -115,7 +116,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
     setIsLoading(true);
     setError(null);
     try {
-      await disconnectRepo({ connectionId, removeFromLibrary });
+      await disconnectRepo(sessionSlug, { connectionId, removeFromLibrary });
       await loadConnections();
       onLinked();
     } catch (disconnectError) {
@@ -138,7 +139,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
     if (accessMode === "public") {
       setIsLoading(true);
       try {
-        await linkRepo({
+        await linkRepo(sessionSlug, {
           provider,
           repoUrl: trimmedUrl,
           accessMode: "public",
@@ -155,13 +156,13 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
     }
 
     if (provider === "github") {
-      window.location.href = buildGithubOAuthStartUrl(trimmedUrl);
+      window.location.href = buildGithubOAuthStartUrl(trimmedUrl, `/session/${sessionSlug}`);
       return;
     }
 
     const baseUrl = gitlabBaseUrl.trim() || DEFAULT_GITLAB_BASE;
     if (authMethod === "oauth") {
-      window.location.href = buildGitlabOAuthStartUrl(trimmedUrl, baseUrl);
+      window.location.href = buildGitlabOAuthStartUrl(trimmedUrl, baseUrl, `/session/${sessionSlug}`);
       return;
     }
 
@@ -172,7 +173,7 @@ export default function RepoLinkModal({ open, onClose, onLinked }: Props) {
 
     setIsLoading(true);
     try {
-      await linkRepo({
+      await linkRepo(sessionSlug, {
         provider: "gitlab",
         repoUrl: trimmedUrl,
         accessMode: "private",

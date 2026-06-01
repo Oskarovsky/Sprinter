@@ -23,9 +23,9 @@ describe("repo-client", () => {
       new Response(JSON.stringify({ connections: [], activeConnectionId: null }), { status: 200 }),
     );
 
-    const result = await fetchRepoConnections();
+    const result = await fetchRepoConnections("default");
     expect(result.connections).toEqual([]);
-    expect(fetch).toHaveBeenCalledWith("/api/repo/connections", { credentials: "include" });
+    expect(fetch).toHaveBeenCalledWith("/api/repo/connections?sessionSlug=default", { credentials: "include" });
   });
 
   it("fetchSessionRepoStatus returns linked summary", async () => {
@@ -44,9 +44,10 @@ describe("repo-client", () => {
       ),
     );
 
-    const result = await fetchSessionRepoStatus();
+    const result = await fetchSessionRepoStatus("sprint-42");
     expect(result.linked).toBe(true);
     expect(result.connection?.repoFullName).toBe("acme/widget");
+    expect(fetch).toHaveBeenCalledWith("/api/repo/session?sessionSlug=sprint-42", { credentials: "include" });
   });
 
   it("linkRepo posts repository details without tokens in response handling", async () => {
@@ -67,24 +68,25 @@ describe("repo-client", () => {
       ),
     );
 
-    const result = await linkRepo({
+    const result = await linkRepo("default", {
       provider: "gitlab",
       repoUrl: "https://gitlab.com/acme/widget",
       accessMode: "public",
     });
     expect(result.connection.id).toBe("conn-1");
     expect(JSON.stringify(result)).not.toContain("accessToken");
+    expect(fetch).toHaveBeenCalledWith("/api/repo/link?sessionSlug=default", expect.any(Object));
   });
 
   it("disconnectRepo sends DELETE body", async () => {
     vi.mocked(fetch).mockResolvedValue(new Response(JSON.stringify({ disconnected: true }), { status: 200 }));
 
-    await disconnectRepo({ removeFromLibrary: true, connectionId: "conn-1" });
-    expect(fetch).toHaveBeenCalledWith("/api/repo/link", {
+    await disconnectRepo("default", { removeFromLibrary: true, connectionId: "conn-1" });
+    expect(fetch).toHaveBeenCalledWith("/api/repo/link?sessionSlug=default", {
       method: "DELETE",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ removeFromLibrary: true, connectionId: "conn-1" }),
+      body: JSON.stringify({ removeFromLibrary: true, connectionId: "conn-1", sessionSlug: "default" }),
     });
   });
 

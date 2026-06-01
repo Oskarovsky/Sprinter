@@ -31,6 +31,12 @@ export interface LinkRepoRequest {
   accessMode: "public" | "private";
   gitlabBaseUrl?: string;
   accessToken?: string;
+  sessionSlug?: string;
+}
+
+function withSessionSlug(path: string, sessionSlug: string): string {
+  const params = new URLSearchParams({ sessionSlug });
+  return `${path}?${params.toString()}`;
 }
 
 async function readRepoError(response: Response): Promise<string> {
@@ -38,24 +44,27 @@ async function readRepoError(response: Response): Promise<string> {
   return body?.error ?? `Request failed (${response.status})`;
 }
 
-export async function fetchRepoConnections(): Promise<RepoConnectionsResponse> {
-  const response = await fetch("/api/repo/connections", { credentials: "include" });
+export async function fetchRepoConnections(sessionSlug: string): Promise<RepoConnectionsResponse> {
+  const response = await fetch(withSessionSlug("/api/repo/connections", sessionSlug), { credentials: "include" });
   if (!response.ok) {
     throw new Error(await readRepoError(response));
   }
   return (await response.json()) as RepoConnectionsResponse;
 }
 
-export async function fetchSessionRepoStatus(): Promise<SessionRepoStatus> {
-  const response = await fetch("/api/repo/session", { credentials: "include" });
+export async function fetchSessionRepoStatus(sessionSlug: string): Promise<SessionRepoStatus> {
+  const response = await fetch(withSessionSlug("/api/repo/session", sessionSlug), { credentials: "include" });
   if (!response.ok) {
     throw new Error(await readRepoError(response));
   }
   return (await response.json()) as SessionRepoStatus;
 }
 
-export async function linkRepo(body: LinkRepoRequest): Promise<{ connection: PublicRepoConnection }> {
-  const response = await fetch("/api/repo/link", {
+export async function linkRepo(
+  sessionSlug: string,
+  body: LinkRepoRequest,
+): Promise<{ connection: PublicRepoConnection }> {
+  const response = await fetch(withSessionSlug("/api/repo/link", sessionSlug), {
     method: "POST",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
@@ -67,12 +76,15 @@ export async function linkRepo(body: LinkRepoRequest): Promise<{ connection: Pub
   return (await response.json()) as { connection: PublicRepoConnection };
 }
 
-export async function disconnectRepo(options: { removeFromLibrary?: boolean; connectionId?: string } = {}) {
-  const response = await fetch("/api/repo/link", {
+export async function disconnectRepo(
+  sessionSlug: string,
+  options: { removeFromLibrary?: boolean; connectionId?: string } = {},
+) {
+  const response = await fetch(withSessionSlug("/api/repo/link", sessionSlug), {
     method: "DELETE",
     credentials: "include",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(options),
+    body: JSON.stringify({ ...options, sessionSlug }),
   });
   if (!response.ok) {
     throw new Error(await readRepoError(response));
