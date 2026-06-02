@@ -1,7 +1,8 @@
 import { parseAffectedPaths } from "./path-hints";
+import { MAX_ANALYST_FILES, MAX_KEYWORD_SCAN_PATHS } from "./content-limits";
 import type { RepoTreeEntry } from "./tree-types";
 
-export const MAX_ANALYST_FILES = 50;
+export { MAX_ANALYST_FILES } from "./content-limits";
 
 export interface TaskForFileSelection {
   title: string;
@@ -100,7 +101,8 @@ export function selectFilesForTask(tree: RepoTreeEntry[], task: TaskForFileSelec
     return selected;
   }
 
-  for (const path of blobPaths) {
+  const scanPaths = blobPaths.slice(0, MAX_KEYWORD_SCAN_PATHS);
+  for (const path of scanPaths) {
     if (seen.has(path)) {
       continue;
     }
