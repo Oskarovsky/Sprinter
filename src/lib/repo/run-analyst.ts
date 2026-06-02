@@ -18,6 +18,14 @@ export interface RunAnalystParams {
   serviceClient: SupabaseClient;
 }
 
+interface AnalystDiagnosticsPayload {
+  sourceFiles?: string[];
+  aiModel?: string | null;
+  promptTokens?: number | null;
+  completionTokens?: number | null;
+  totalTokens?: number | null;
+}
+
 async function upsertAnalystVote(
   serviceClient: SupabaseClient,
   taskId: string,
@@ -26,9 +34,11 @@ async function upsertAnalystVote(
     storyPoints?: number | null;
     rationale?: string | null;
     errorCode?: string | null;
+    diagnostics?: AnalystDiagnosticsPayload;
   },
 ) {
   const now = new Date().toISOString();
+  const diagnostics = payload.diagnostics;
   await serviceClient.from("analyst_votes").upsert(
     {
       task_id: taskId,
@@ -36,11 +46,21 @@ async function upsertAnalystVote(
       story_points: payload.storyPoints ?? null,
       rationale: payload.rationale ?? null,
       error_code: payload.errorCode ?? null,
-      computed_at: payload.status === "ready" || payload.status === "failed" ? now : null,
+      source_files: diagnostics?.sourceFiles ?? [],
+      ai_model: diagnostics?.aiModel ?? null,
+      prompt_tokens: diagnostics?.promptTokens ?? null,
+      completion_tokens: diagnostics?.completionTokens ?? null,
+      total_tokens: diagnostics?.totalTokens ?? null,
+      computed_at:
+        payload.status === "ready" || payload.status === "failed" || payload.status === "skipped" ? now : null,
       updated_at: now,
     },
     { onConflict: "task_id" },
   );
+}
+
+function filePathsFromSnippets(files: { path: string }[]): string[] {
+  return files.map((file) => file.path);
 }
 
 export async function insertAnalystPending(serviceClient: SupabaseClient, taskId: string) {
@@ -109,30 +129,50 @@ export async function runAnalystForTask({ taskId, sessionId, serviceClient }: Ru
     }
 
     const tree = await getOrRefreshTreeCache(serviceClient, connection.id);
+    console.log(`[runAnalystForTask] Fetched tree with ${tree.length} entries.`);
     if (tree.length === 0) {
       await upsertAnalystVote(serviceClient, taskId, { status: "failed", errorCode: "tree_fetch_failed" });
       return;
     }
 
     const selectedPaths = selectFilesForTask(tree, task);
+    console.log(`[runAnalystForTask] selectFilesForTask selected ${selectedPaths.length} paths:`, selectedPaths);
+
     const files = await fetchFileContents(
       connection,
       selectedPaths,
       { maxFiles: MAX_ANALYST_FILES, maxBytes: MAX_ANALYST_BYTES },
       { accessToken: token?.access_token ?? null, gitlabPat: token?.gitlab_pat ?? false },
     );
+    const sourceFiles = filePathsFromSnippets(files);
+    console.log(`[runAnalystForTask] fetchFileContents returned ${files.length} files.`);
 
-    const analystResult = await generateAnalystVote({
+    const { result: analystResult, error: analystError } = await generateAnalystVote({
       taskTitle: task.title,
       taskDescription: task.description ?? undefined,
       affectedPaths: parseAffectedPaths(task.affected_paths),
       files,
     });
 
+    if (analystError) {
+      await upsertAnalystVote(serviceClient, taskId, {
+        status: "failed",
+        errorCode: analystError,
+        diagnostics: {
+          sourceFiles,
+        },
+      });
+      return;
+    }
+
+    // This should not happen if error is handled, but as a safeguard:
     if (!analystResult) {
       await upsertAnalystVote(serviceClient, taskId, {
         status: "failed",
-        errorCode: files.length === 0 ? "no_files" : "ai_failed",
+        errorCode: "ai_failed",
+        diagnostics: {
+          sourceFiles,
+        },
       });
       return;
     }
@@ -141,6 +181,13 @@ export async function runAnalystForTask({ taskId, sessionId, serviceClient }: Ru
       status: "ready",
       storyPoints: analystResult.storyPoints,
       rationale: analystResult.rationale,
+      diagnostics: {
+        sourceFiles,
+        aiModel: analystResult.aiMeta?.model ?? null,
+        promptTokens: analystResult.aiMeta?.promptTokens ?? null,
+        completionTokens: analystResult.aiMeta?.completionTokens ?? null,
+        totalTokens: analystResult.aiMeta?.totalTokens ?? null,
+      },
     });
   } catch (error) {
     console.error("[runAnalystForTask]", taskId, error);

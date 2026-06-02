@@ -2,10 +2,14 @@ import React, { useCallback, useEffect, useState } from "react";
 import { createBrowserClient } from "@/lib/supabase-browser";
 import { FIBONACCI_STORY_POINTS } from "@/lib/session/constants";
 import { connectSessionRoomRealtime, type SessionRealtimeConnectionStatus } from "@/lib/session/realtime";
-import { fetchSessionRepoStatus, type AnalystVotePublic, type SessionRepoStatus } from "@/lib/session/repo-client";
+import {
+  fetchSessionRepoStatus,
+  type AnalystDiagnosticsPublic,
+  type AnalystVotePublic,
+  type SessionRepoStatus,
+} from "@/lib/session/repo-client";
 import type { Task, VoteParticipation } from "@/lib/session/types";
-import AnalystPendingIndicator from "@/components/session/AnalystPendingIndicator";
-import AnalystReferenceCard from "@/components/session/AnalystReferenceCard";
+import AnalystInsightsSection from "@/components/session/AnalystInsightsSection";
 import RepoLinkModal from "@/components/session/RepoLinkModal";
 import TaskHistoryMock from "@/components/session/TaskHistoryMock";
 
@@ -16,6 +20,7 @@ interface SessionStateResponse {
   humanAverageFormatted: string | null;
   analyst: AnalystVotePublic | null;
   analystPending: boolean;
+  analystDiagnostics: AnalystDiagnosticsPublic | null;
 }
 
 interface Props {
@@ -27,6 +32,7 @@ interface Props {
   initialHumanAverageFormatted: string | null;
   initialAnalyst: AnalystVotePublic | null;
   initialAnalystPending: boolean;
+  initialAnalystDiagnostics: AnalystDiagnosticsPublic | null;
   realtimeAccessToken: string | null;
   planningSessionId: string | null;
   sessionSlug: string;
@@ -110,6 +116,7 @@ export default function SessionRoom({
   initialHumanAverageFormatted,
   initialAnalyst,
   initialAnalystPending,
+  initialAnalystDiagnostics,
   realtimeAccessToken,
   planningSessionId,
   sessionSlug,
@@ -127,6 +134,9 @@ export default function SessionRoom({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [analyst, setAnalyst] = useState<AnalystVotePublic | null>(initialAnalyst);
   const [analystPending, setAnalystPending] = useState(initialAnalystPending);
+  const [analystDiagnostics, setAnalystDiagnostics] = useState<AnalystDiagnosticsPublic | null>(
+    initialAnalystDiagnostics,
+  );
   const [repoStatus, setRepoStatus] = useState<SessionRepoStatus | null>(null);
   const [repoModalOpen, setRepoModalOpen] = useState(false);
 
@@ -163,6 +173,7 @@ export default function SessionRoom({
       setHumanAverageFormatted(data.humanAverageFormatted);
       setAnalyst(data.analyst);
       setAnalystPending(data.analystPending);
+      setAnalystDiagnostics(data.analystDiagnostics);
       setBannerError(null);
     },
     [sessionSlug],
@@ -190,7 +201,11 @@ export default function SessionRoom({
   useEffect(() => {
     const taskId = task?.id;
     const taskStatus = task?.status;
-    if (!taskId || taskStatus !== "revealed" || analyst || !analystPending) {
+    if (
+      !taskId ||
+      taskStatus !== "revealed" ||
+      (!analystPending && (analyst !== null || analystDiagnostics !== null))
+    ) {
       return;
     }
 
@@ -205,7 +220,7 @@ export default function SessionRoom({
       window.clearInterval(interval);
       window.clearTimeout(timeout);
     };
-  }, [task?.id, task?.status, analyst, analystPending, refetchState]);
+  }, [task?.id, task?.status, analyst, analystDiagnostics, analystPending, refetchState]);
 
   useEffect(() => {
     if (!planningSessionId || needsDisplayName) {
@@ -506,10 +521,11 @@ export default function SessionRoom({
           ) : (
             <p className="mt-2 text-sm text-blue-100/60">Peer story points stay hidden until reveal.</p>
           )}
-          {isRevealed && analyst ? (
-            <AnalystReferenceCard storyPoints={analyst.storyPoints} rationale={analyst.rationale} />
+          {isRevealed ? (
+            <AnalystInsightsSection vote={analyst} pending={analystPending} diagnostics={analystDiagnostics} />
+          ) : analystPending ? (
+            <AnalystInsightsSection vote={null} pending diagnostics={null} />
           ) : null}
-          {analystPending && !analyst ? <AnalystPendingIndicator /> : null}
           {participation.length === 0 ? (
             <p className="mt-2 text-sm text-blue-100/60">No votes yet.</p>
           ) : (

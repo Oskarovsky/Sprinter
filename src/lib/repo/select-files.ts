@@ -45,6 +45,11 @@ function collectHintMatches(blobPaths: string[], hint: string): string[] {
   return blobPaths.filter((path) => matchesHint(path, hint));
 }
 
+function extractPotentialFilenames(text: string): string[] {
+  const words = text.match(/[A-Z][a-zA-Z0-9]*/gu);
+  return words ? Array.from(new Set(words)) : [];
+}
+
 export function selectFilesForTask(tree: RepoTreeEntry[], task: TaskForFileSelection): string[] {
   const blobPaths = tree.filter((entry) => entry.type === "blob").map((entry) => entry.path);
   const selected: string[] = [];
@@ -65,6 +70,29 @@ export function selectFilesForTask(tree: RepoTreeEntry[], task: TaskForFileSelec
         return selected;
       }
     }
+  }
+
+  const potentialFilenames = extractPotentialFilenames(`${task.title} ${task.description ?? ""}`);
+  if (potentialFilenames.length > 0) {
+    for (const path of blobPaths) {
+      if (seen.has(path)) {
+        continue;
+      }
+      const pathFilename = path.split("/").pop()?.split(".")[0];
+      if (!pathFilename) {
+        continue;
+      }
+      if (potentialFilenames.some((name) => name.toLowerCase() === pathFilename.toLowerCase())) {
+        addPath(path);
+        if (selected.length >= MAX_ANALYST_FILES) {
+          return selected;
+        }
+      }
+    }
+  }
+
+  if (selected.length > 0) {
+    return selected;
   }
 
   const keywords = tokenize(`${task.title} ${task.description ?? ""}`);

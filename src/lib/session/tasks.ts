@@ -120,7 +120,7 @@ export async function getLatestActiveTask(supabase: SessionSupabaseClient, sessi
     .from("tasks")
     .select("*")
     .eq("session_id", sessionId)
-    .in("status", ["voting", "revealed"])
+    .in("status", ["draft", "voting", "revealed"])
     .order("updated_at", { ascending: false })
     .limit(1)
     .maybeSingle();
