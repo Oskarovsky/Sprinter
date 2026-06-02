@@ -1,5 +1,10 @@
 import { isAiConfigured } from "./config";
+<<<<<<< HEAD
 import { completeJsonWithMeta } from "./openrouter";
+=======
+import { completeJson } from "./openrouter";
+import { MAX_ANALYST_PROMPT_CHARS } from "@/lib/repo/content-limits";
+>>>>>>> de547d767ff027a466953f41177fb1de3349dcad
 import type { AnalystInput, AnalystResult, OpenRouterAnalystResponse } from "./types";
 
 export const VALID_ANALYST_STORY_POINTS = [1, 2, 3, 5, 8, 13, 21] as const;
@@ -39,7 +44,7 @@ function buildUserPrompt(input: AnalystInput): string {
       ? input.files
           .map((file) => `--- ${file.path} ---\n${file.content}`)
           .join("\n\n")
-          .slice(0, 120_000)
+          .slice(0, MAX_ANALYST_PROMPT_CHARS)
       : "(no file snippets available)";
 
   return `Task title: ${input.taskTitle.trim()}${descriptionLine}${hintsLine}\n\nFile snippets:\n${filesBlock}`;
