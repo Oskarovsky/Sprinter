@@ -37,8 +37,29 @@ export interface AnalystVote {
   status: AnalystVoteStatus;
   computed_at: string | null;
   error_code: string | null;
+  source_files: string[];
+  ai_model: string | null;
+  prompt_tokens: number | null;
+  completion_tokens: number | null;
+  total_tokens: number | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface AnalystAiDiagnosticsPublic {
+  called: boolean;
+  model: string | null;
+  promptTokens: number | null;
+  completionTokens: number | null;
+  totalTokens: number | null;
+}
+
+export interface AnalystDiagnosticsPublic {
+  status: AnalystVoteStatus;
+  errorCode: string | null;
+  errorMessage: string | null;
+  sourceFiles: string[];
+  ai: AnalystAiDiagnosticsPublic;
 }
 
 export interface AnalystVotePublic {

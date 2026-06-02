@@ -308,13 +308,20 @@ export async function fetchGitlabBlobContent(
   auth: GitlabTokenAuth = "oauth",
 ): Promise<string | null> {
   const encodedFilePath = filePath.split("/").map(encodeURIComponent).join("/");
-  const apiPath = `/api/v4/projects/${encodeProjectPath(projectPath)}/repository/files/${encodedFilePath}/raw?ref=${encodeURIComponent(ref)}`;
+  const apiPath = `/api/v4/projects/${encodeProjectPath(
+    projectPath,
+  )}/repository/files/${encodedFilePath}/raw?ref=${encodeURIComponent(ref)}`;
   const response =
     token && auth === "pat"
       ? await fetchGitlabWithAccessToken(baseUrl, apiPath, token, "pat")
       : await fetch(`${baseUrl}${apiPath}`, { headers: gitlabHeaders(token, auth) });
 
   if (!response.ok) {
+    const message = await readGitlabErrorMessage(response);
+    console.error(
+      `[gitlab] Failed to fetch blob ${filePath} from ${projectPath}: ${response.status} ${response.statusText}`,
+      message,
+    );
     return null;
   }
 

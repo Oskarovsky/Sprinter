@@ -1,12 +1,17 @@
 import { isAiConfigured } from "./config";
+<<<<<<< HEAD
+import { completeJsonWithMeta } from "./openrouter";
+=======
 import { completeJson } from "./openrouter";
 import { MAX_ANALYST_PROMPT_CHARS } from "@/lib/repo/content-limits";
+>>>>>>> de547d767ff027a466953f41177fb1de3349dcad
 import type { AnalystInput, AnalystResult, OpenRouterAnalystResponse } from "./types";
 
 export const VALID_ANALYST_STORY_POINTS = [1, 2, 3, 5, 8, 13, 21] as const;
 
 const ANALYST_SYSTEM_PROMPT = `You are Sprinter Analyst — a reference-only planning poker assistant.
-Estimate story points from code complexity signals in the provided task and file snippets.
+Estimate story points ONLY from code complexity signals in the provided file snippets.
+If no file snippets are available, respond with { "storyPoints": null, "rationale": "" }.
 Respond with JSON only: { "storyPoints": number, "rationale": string }.
 Use Fibonacci scale only: 1, 2, 3, 5, 8, 13, or 21.
 This vote is reference-only and excluded from the human team average.
@@ -45,15 +50,42 @@ function buildUserPrompt(input: AnalystInput): string {
   return `Task title: ${input.taskTitle.trim()}${descriptionLine}${hintsLine}\n\nFile snippets:\n${filesBlock}`;
 }
 
-export async function generateAnalystVote(input: AnalystInput): Promise<AnalystResult | null> {
+export async function generateAnalystVote(
+  input: AnalystInput,
+): Promise<{ result: AnalystResult | null; error?: "ai_failed" | "no_files" | "not_configured" }> {
   if (!isAiConfigured()) {
-    return null;
+    return { result: null, error: "not_configured" };
+  }
+  if (input.files.length === 0) {
+    return { result: null, error: "no_files" };
   }
 
-  const aiResult = await completeJson<OpenRouterAnalystResponse>(ANALYST_SYSTEM_PROMPT, buildUserPrompt(input));
-  if (!aiResult) {
-    return null;
+  const aiResponse = await completeJsonWithMeta<OpenRouterAnalystResponse>(
+    ANALYST_SYSTEM_PROMPT,
+    buildUserPrompt(input),
+  );
+  if (!aiResponse) {
+    return { result: null, error: "ai_failed" };
   }
 
-  return normalizeAnalystResponse(aiResult);
+  const normalized = normalizeAnalystResponse(aiResponse.data);
+  if (!normalized) {
+    return { result: null, error: "ai_failed" };
+  }
+
+  if (!aiResponse.usage) {
+    return { result: normalized };
+  }
+
+  return {
+    result: {
+      ...normalized,
+      aiMeta: {
+        model: aiResponse.model,
+        promptTokens: aiResponse.usage.promptTokens,
+        completionTokens: aiResponse.usage.completionTokens,
+        totalTokens: aiResponse.usage.totalTokens,
+      },
+    },
+  };
 }
