@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("./openrouter", () => ({
-  completeJson: vi.fn(),
+  completeJsonWithMeta: vi.fn(),
 }));
 
-import { completeJson } from "./openrouter";
+import { completeJsonWithMeta } from "./openrouter";
 import { generateAnalystVote, normalizeAnalystResponse } from "./generate-analyst";
 
 describe("normalizeAnalystResponse", () => {
@@ -52,6 +52,17 @@ describe("generateAnalystVote", () => {
     });
 
     expect(result).toBeNull();
-    expect(completeJson).not.toHaveBeenCalled();
+    expect(completeJsonWithMeta).not.toHaveBeenCalled();
+  });
+
+  it("returns null when no file snippets were fetched", async () => {
+    const result = await generateAnalystVote({
+      taskTitle: "Add repo link",
+      affectedPaths: [],
+      files: [],
+    });
+
+    expect(result).toBeNull();
+    expect(completeJsonWithMeta).not.toHaveBeenCalled();
   });
 });

@@ -59,22 +59,29 @@ async function fetchSingleFile(
   ref: string,
   tokenOptions: FetchFileTokenOptions,
 ): Promise<string | null> {
-  const accessToken = connection.access_mode === "private" ? (tokenOptions.accessToken ?? undefined) : undefined;
+  try {
+    const accessToken = connection.access_mode === "private" ? tokenOptions.accessToken ?? undefined : undefined;
 
-  if (connection.provider === "github") {
-    const parsed = parseGithubRepoUrl(connection.repo_url);
+    if (connection.provider === "github") {
+      const parsed = parseGithubRepoUrl(connection.repo_url);
+      if (!parsed) {
+        console.error(`[fetchSingleFile] Could not parse GitHub repo URL: ${connection.repo_url}`);
+        return null;
+      }
+      return await fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
+    }
+
+    const baseUrl = connection.gitlab_base_url ?? DEFAULT_GITLAB_BASE_URL;
+    const parsed = parseGitlabRepoUrl(connection.repo_url, baseUrl);
     if (!parsed) {
+      console.error(`[fetchSingleFile] Could not parse GitLab repo URL: ${connection.repo_url}`);
       return null;
     }
-    return fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
-  }
 
-  const baseUrl = connection.gitlab_base_url ?? DEFAULT_GITLAB_BASE_URL;
-  const parsed = parseGitlabRepoUrl(connection.repo_url, baseUrl);
-  if (!parsed) {
+    const auth: GitlabTokenAuth = tokenOptions.gitlabPat ? "pat" : "oauth";
+    return await fetchGitlabBlobContent(baseUrl, parsed.projectPath, path, ref, accessToken, auth);
+  } catch (error) {
+    console.error(`[fetchSingleFile] Unhandled exception fetching ${path} from ${connection.repo_url}:`, error);
     return null;
   }
-
-  const auth: GitlabTokenAuth = tokenOptions.gitlabPat ? "pat" : "oauth";
-  return fetchGitlabBlobContent(baseUrl, parsed.projectPath, path, ref, accessToken, auth);
 }

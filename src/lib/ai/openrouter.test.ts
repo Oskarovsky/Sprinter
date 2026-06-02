@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as config from "./config";
-import { completeJson } from "./openrouter";
+import { completeJson, completeJsonWithMeta } from "./openrouter";
 
 describe("completeJson", () => {
   beforeEach(() => {
@@ -58,5 +58,24 @@ describe("completeJson", () => {
     const result = await completeJson("system", "user");
     expect(result).toBeNull();
     expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("returns usage metadata from completeJsonWithMeta", async () => {
+    vi.mocked(fetch).mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ storyPoints: 5, rationale: "ok" }) } }],
+          usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 },
+        }),
+        { status: 200 },
+      ),
+    );
+
+    const result = await completeJsonWithMeta<{ storyPoints: number; rationale: string }>("system", "user");
+    expect(result).toEqual({
+      data: { storyPoints: 5, rationale: "ok" },
+      model: "openai/gpt-4o-mini",
+      usage: { promptTokens: 10, completionTokens: 5, totalTokens: 15 },
+    });
   });
 });

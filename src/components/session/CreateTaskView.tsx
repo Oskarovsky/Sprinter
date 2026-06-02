@@ -64,8 +64,11 @@ export default function CreateTaskView({ sessionSlug, heading = "Create a task" 
         return;
       }
 
-      await response.json().catch(() => null);
-      window.location.href = `/session/${sessionSlug}`;
+      const payload = (await response.json().catch(() => null)) as { task?: { id?: string } } | null;
+      const taskId = payload?.task?.id;
+      window.location.href = taskId
+        ? `/session/${sessionSlug}?taskId=${encodeURIComponent(taskId)}`
+        : `/session/${sessionSlug}`;
     } finally {
       if (mountedRef.current) {
         setIsSubmitting(false);

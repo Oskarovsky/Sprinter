@@ -51,6 +51,7 @@ export const GET: APIRoute = async (context) => {
         humanAverageFormatted: null,
         analyst: null,
         analystPending: false,
+        analystDiagnostics: null,
       },
       200,
     );
@@ -66,6 +67,7 @@ export const GET: APIRoute = async (context) => {
   let humanAverageFormatted: string | null = null;
   let analyst = null;
   let analystPending = false;
+  let analystDiagnostics = null;
 
   if (task.status === "revealed") {
     participation = sortParticipationByPoints(participation);
@@ -77,7 +79,11 @@ export const GET: APIRoute = async (context) => {
     const analystState = await getAnalystStateForTask(auth.supabase, task.id, task.status);
     analyst = analystState.analyst;
     analystPending = analystState.analystPending;
+    analystDiagnostics = analystState.analystDiagnostics;
   }
 
-  return jsonResponse({ task, participation, humanAverage, humanAverageFormatted, analyst, analystPending }, 200);
+  return jsonResponse(
+    { task, participation, humanAverage, humanAverageFormatted, analyst, analystPending, analystDiagnostics },
+    200,
+  );
 };

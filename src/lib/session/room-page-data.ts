@@ -1,4 +1,4 @@
-import type { AnalystVotePublic } from "@/lib/repo/types";
+import type { AnalystDiagnosticsPublic, AnalystVotePublic } from "@/lib/repo/types";
 import {
   computeHumanAverage,
   formatHumanAverage,
@@ -6,6 +6,7 @@ import {
   getDisplayName,
   getLatestActiveTask,
   getSessionIdBySlug,
+  getTask,
   isDefaultDisplayName,
   listParticipation,
   sortParticipationByPoints,
@@ -23,6 +24,7 @@ export interface SessionRoomPageData {
   initialHumanAverageFormatted: string | null;
   initialAnalyst: AnalystVotePublic | null;
   initialAnalystPending: boolean;
+  initialAnalystDiagnostics: AnalystDiagnosticsPublic | null;
   notFound: boolean;
 }
 
@@ -31,6 +33,7 @@ export async function loadSessionRoomPageData(
   userId: string,
   sessionSlug: string,
   realtimeAccessToken: string | null,
+  preferredTaskId?: string | null,
 ): Promise<SessionRoomPageData> {
   const empty: SessionRoomPageData = {
     sessionSlug,
@@ -43,6 +46,7 @@ export async function loadSessionRoomPageData(
     initialHumanAverageFormatted: null,
     initialAnalyst: null,
     initialAnalystPending: false,
+    initialAnalystDiagnostics: null,
     notFound: false,
   };
 
@@ -66,7 +70,18 @@ export async function loadSessionRoomPageData(
     data.needsDisplayName = isDefaultDisplayName(userId, profileResult.data);
   }
 
-  const taskResult = await getLatestActiveTask(supabase, sessionResult.data);
+  let taskResult;
+  if (preferredTaskId) {
+    const preferredTask = await getTask(supabase, preferredTaskId);
+    if (!preferredTask.error && preferredTask.data?.session_id === sessionResult.data) {
+      taskResult = preferredTask;
+    } else {
+      taskResult = await getLatestActiveTask(supabase, sessionResult.data);
+    }
+  } else {
+    taskResult = await getLatestActiveTask(supabase, sessionResult.data);
+  }
+
   if (taskResult.error || !taskResult.data) {
     return data;
   }
@@ -95,6 +110,7 @@ export async function loadSessionRoomPageData(
     const analystState = await getAnalystStateForTask(supabase, taskResult.data.id, taskResult.data.status);
     data.initialAnalyst = analystState.analyst;
     data.initialAnalystPending = analystState.analystPending;
+    data.initialAnalystDiagnostics = analystState.analystDiagnostics;
   }
 
   return data;
