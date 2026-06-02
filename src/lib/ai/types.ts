@@ -51,9 +51,17 @@ export interface AnalystInput {
   files: AnalystFileSnippet[];
 }
 
+export interface AnalystAiMeta {
+  model: string;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+}
+
 export interface AnalystResult {
   storyPoints: number;
   rationale: string;
+  aiMeta?: AnalystAiMeta;
 }
 
 export interface OpenRouterAnalystResponse {

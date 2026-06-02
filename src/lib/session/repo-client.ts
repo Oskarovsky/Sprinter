@@ -1,4 +1,4 @@
-import type { AnalystVotePublic } from "@/lib/repo/types";
+import type { AnalystDiagnosticsPublic, AnalystVotePublic } from "@/lib/repo/types";
 
 export interface PublicRepoConnection {
   id: string;
@@ -110,4 +110,4 @@ export function buildGitlabOAuthStartUrl(repoUrl: string, gitlabBaseUrl: string,
   return `/api/repo/oauth/gitlab/start?${params.toString()}`;
 }
 
-export type { AnalystVotePublic };
+export type { AnalystDiagnosticsPublic, AnalystVotePublic };

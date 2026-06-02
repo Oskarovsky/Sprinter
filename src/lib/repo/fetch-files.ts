@@ -71,6 +71,10 @@ async function fetchSingleFile(
   tokenOptions: FetchFileTokenOptions,
   cacheOptions?: FetchFileCacheOptions,
 ): Promise<string | null> {
+<<<<<<< HEAD
+  try {
+    const accessToken = connection.access_mode === "private" ? tokenOptions.accessToken ?? undefined : undefined;
+=======
   const blobSha = cacheOptions?.blobShaByPath.get(path) ?? "";
 
   if (cacheOptions && blobSha) {
@@ -82,12 +86,32 @@ async function fetchSingleFile(
 
   const accessToken = connection.access_mode === "private" ? (tokenOptions.accessToken ?? undefined) : undefined;
   let content: string | null = null;
+>>>>>>> de547d767ff027a466953f41177fb1de3349dcad
 
-  if (connection.provider === "github") {
-    const parsed = parseGithubRepoUrl(connection.repo_url);
+    if (connection.provider === "github") {
+      const parsed = parseGithubRepoUrl(connection.repo_url);
+      if (!parsed) {
+        console.error(`[fetchSingleFile] Could not parse GitHub repo URL: ${connection.repo_url}`);
+        return null;
+      }
+      return await fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
+    }
+
+    const baseUrl = connection.gitlab_base_url ?? DEFAULT_GITLAB_BASE_URL;
+    const parsed = parseGitlabRepoUrl(connection.repo_url, baseUrl);
     if (!parsed) {
+      console.error(`[fetchSingleFile] Could not parse GitLab repo URL: ${connection.repo_url}`);
       return null;
     }
+<<<<<<< HEAD
+
+    const auth: GitlabTokenAuth = tokenOptions.gitlabPat ? "pat" : "oauth";
+    return await fetchGitlabBlobContent(baseUrl, parsed.projectPath, path, ref, accessToken, auth);
+  } catch (error) {
+    console.error(`[fetchSingleFile] Unhandled exception fetching ${path} from ${connection.repo_url}:`, error);
+    return null;
+  }
+=======
     content = await fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
   } else {
     const baseUrl = connection.gitlab_base_url ?? DEFAULT_GITLAB_BASE_URL;
@@ -110,4 +134,5 @@ async function fetchSingleFile(
   }
 
   return storable;
+>>>>>>> de547d767ff027a466953f41177fb1de3349dcad
 }

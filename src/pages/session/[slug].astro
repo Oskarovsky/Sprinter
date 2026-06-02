@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase";
 
 const { user } = Astro.locals;
 const sessionSlug = Astro.params.slug ?? "";
+const preferredTaskId = Astro.url.searchParams.get("taskId");
 
 let pageData = {
   sessionSlug,
@@ -18,6 +19,7 @@ let pageData = {
   initialHumanAverageFormatted: null as string | null,
   initialAnalyst: null,
   initialAnalystPending: false,
+  initialAnalystDiagnostics: null,
   notFound: true,
 };
 
@@ -25,7 +27,7 @@ const supabase = createClient(Astro.request.headers, Astro.cookies);
 if (supabase && user && sessionSlug) {
   const sessionResult = await supabase.auth.getSession();
   const realtimeAccessToken = sessionResult.data.session?.access_token ?? null;
-  pageData = await loadSessionRoomPageData(supabase, user.id, sessionSlug, realtimeAccessToken);
+  pageData = await loadSessionRoomPageData(supabase, user.id, sessionSlug, realtimeAccessToken, preferredTaskId);
 }
 
 if (pageData.notFound) {
@@ -75,6 +77,7 @@ if (pageData.notFound) {
                 initialHumanAverageFormatted={pageData.initialHumanAverageFormatted}
                 initialAnalyst={pageData.initialAnalyst}
                 initialAnalystPending={pageData.initialAnalystPending}
+                initialAnalystDiagnostics={pageData.initialAnalystDiagnostics}
                 realtimeAccessToken={pageData.realtimeAccessToken}
                 planningSessionId={pageData.planningSessionId}
                 sessionSlug={sessionSlug}
