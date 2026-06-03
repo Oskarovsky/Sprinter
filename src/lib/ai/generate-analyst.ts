@@ -1,10 +1,6 @@
 import { isAiConfigured } from "./config";
-<<<<<<< HEAD
 import { completeJsonWithMeta } from "./openrouter";
-=======
-import { completeJson } from "./openrouter";
 import { MAX_ANALYST_PROMPT_CHARS } from "@/lib/repo/content-limits";
->>>>>>> de547d767ff027a466953f41177fb1de3349dcad
 import type { AnalystInput, AnalystResult, OpenRouterAnalystResponse } from "./types";
 
 export const VALID_ANALYST_STORY_POINTS = [1, 2, 3, 5, 8, 13, 21] as const;
