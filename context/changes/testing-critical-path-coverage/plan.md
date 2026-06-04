@@ -173,10 +173,10 @@ Update the main `test-plan.md` to include a cookbook recipe for adding new API i
 ### Phase 1: Test Environment Setup
 
 #### Automated
-- [x] 1.1 The `test:integration` script runs without errors (even if there are no tests yet).
+- [x] 1.1 The `test:integration` script runs without errors (even if there are no tests yet). — bbf3767
 
 #### Manual
-- [x] 1.2 A team member has created a new Supabase project for testing and populated the `.env.test` file.
+- [x] 1.2 A team member has created a new Supabase project for testing and populated the `.env.test` file. — bbf3767
 
 ### Phase 2: Authentication Integration Tests
 
