@@ -1,8 +1,8 @@
-export const SUPABASE_URL = "http://localhost:54321";
+export const SUPABASE_URL = "http://127.0.0.1:54321";
 export const SUPABASE_KEY = "test-anon-key";
-export const PUBLIC_SUPABASE_URL = "http://localhost:54321";
+export const PUBLIC_SUPABASE_URL = "http://127.0.0.1:54321";
 export const PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
-export const SUPABASE_SERVICE_ROLE_KEY = "test-service-key";
+export const SUPABASE_SERVICE_ROLE_KEY = "REDACTED_SUPABASE_SECRET";
 
 export const OPENROUTER_API_KEY: string | undefined = undefined;
 
