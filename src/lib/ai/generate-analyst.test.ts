@@ -51,7 +51,7 @@ describe("generateAnalystVote", () => {
       files: [{ path: "src/a.ts", content: "export {}" }],
     });
 
-    expect(result).toBeNull();
+    expect(result.result).toBeNull();
     expect(completeJsonWithMeta).not.toHaveBeenCalled();
   });
 
@@ -62,7 +62,7 @@ describe("generateAnalystVote", () => {
       files: [],
     });
 
-    expect(result).toBeNull();
+    expect(result.result).toBeNull();
     expect(completeJsonWithMeta).not.toHaveBeenCalled();
   });
 });
