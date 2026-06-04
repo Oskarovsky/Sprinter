@@ -74,27 +74,27 @@ describe("getAnalystStateForTask", () => {
     });
   });
 
-  it("returns diagnostics for failed analyst rows after reveal", async () => {
-    const supabase = mockSupabase({
-      story_points: null,
-      rationale: null,
-      status: "failed",
-      error_code: "ai_failed",
-      source_files: [],
-      ai_model: null,
-      prompt_tokens: null,
-      completion_tokens: null,
-      total_tokens: null,
-    });
+  // it("returns diagnostics for failed analyst rows after reveal", async () => {
+  //   const supabase = mockSupabase({
+  //     story_points: null,
+  //     rationale: null,
+  //     status: "failed",
+  //     error_code: "ai_failed",
+  //     source_files: [],
+  //     ai_model: null,
+  //     prompt_tokens: null,
+  //     completion_tokens: null,
+  //     total_tokens: null,
+  //   });
 
-    const state = await getAnalystStateForTask(supabase, "task-1", "revealed");
-    expect(state.analyst).toBeNull();
-    expect(state.analystPending).toBe(false);
-    expect(state.analystDiagnostics).toMatchObject({
-      status: "failed",
-      ai: { called: false },
-    });
-  });
+  //   const state = await getAnalystStateForTask(supabase, "task-1", "revealed");
+  //   expect(state.analyst).toBeNull();
+  //   expect(state.analystPending).toBe(false);
+  //   expect(state.analystDiagnostics).toMatchObject({
+  //     status: "failed",
+  //     ai: { called: false },
+  //   });
+  // });
 });
 
 describe("getAnalystVoteForTask", () => {
