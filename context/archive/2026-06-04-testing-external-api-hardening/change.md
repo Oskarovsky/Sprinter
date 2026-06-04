@@ -1,7 +1,8 @@
 # Change: External API Hardening
 
 **Date**: 2026-06-04
-**Status**: implemented
+**Status**: archived
+**Archived_at**: 2026-06-04T14:00:00Z
 
 ## Description
 
