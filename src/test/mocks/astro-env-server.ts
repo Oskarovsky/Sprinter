@@ -2,7 +2,7 @@ import "dotenv/config";
 export const SUPABASE_URL = "http://127.0.0.1:54321";
 export const SUPABASE_KEY = "test-anon-key";
 export const PUBLIC_SUPABASE_URL = "http://127.0.0.1:54321";
-export const PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
+export const PUBLIC_SUPABASE_ANON_KEY = process.env.PUBLIC_SUPABASE_ANON_KEY;
 export const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 export const OPENROUTER_API_KEY: string | undefined = "test-api-key";
