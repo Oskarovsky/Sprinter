@@ -102,20 +102,33 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test
 
-- **Location**: next to the unit under test.
-- **Naming**: `<module>.test.ts`.
-- **Reference test**: `src/lib/utils.test.ts`.
-- **Run locally**: `npm test -- <path_to_test>`.
+- **Location**: next to the unit under test, e.g., `src/lib/session/`.
+- **Naming**: `<module>.test.ts`, e.g. `average.test.ts` if testing `average.ts`.
+- **Reference test**: See the "Average Calculation" tests in `src/lib/session/calculation.test.ts`.
+- **Run locally**: `npm test -- src/lib/session/calculation.test.ts`.
 
 ### 6.2 Adding an integration test
 
-- TBD — see §3 Phase 1.
+An integration test verifies a piece of logic against a real dependency, like a database.
 
-### 6.3 Adding an e2e test
+- **Location**: In a test file for the feature, e.g. `src/lib/session/calculation.test.ts` for session logic.
+- **Setup**: Use `beforeAll` to create necessary test data (e.g., users, sessions, tasks) in the local test database. Use `afterAll` to clean up all created data.
+- **Database Client**: Use the `supabaseAdmin` client, which has service role privileges to bypass RLS for test setup.
+- **Reference test**: See the "listParticipation" test in `src/lib/session/calculation.test.ts`.
+- **Run locally**: `npm run test:integration -- src/lib/session/calculation.test.ts`.
 
-- TBD — see §3 Phase 1.
+### 6.3 Adding a test for a new API endpoint
 
-### 6.4 Adding a test for a new API endpoint
+Testing API endpoints directly can be brittle, especially when they involve complex authentication or orchestration logic. The preferred approach is to test the underlying business logic functions directly with a combination of unit and integration tests (see above).
+
+However, for simple, self-contained API endpoints (like authentication), you can test the handler directly by mocking its context.
+
+- **Location**: `src/pages/api/.../endpoint.test.ts`.
+- **Strategy**: Mock the `APIContext` object and the Supabase client (`@/lib/supabase`). Call the exported handler function directly and assert on the mocked calls.
+- **Reference test**: `src/pages/api/auth/auth.test.ts`.
+- **Run locally**: `npm run test:integration -- src/pages/api/auth/auth.test.ts`.
+
+### 6.4 Adding an e2e test
 
 - TBD — see §3 Phase 1.
 

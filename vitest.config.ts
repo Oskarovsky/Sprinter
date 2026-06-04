@@ -8,6 +8,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "src"),
+      "astro:env/server": path.resolve(rootDir, "src/test/mocks/astro-env-server.ts"),
     },
   },
   test: {
