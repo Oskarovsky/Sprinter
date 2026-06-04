@@ -63,8 +63,8 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Critical-path coverage | Defend against core logic and auth failures. | #1, #2 | integration | change opened | context/changes/testing-critical-path-coverage |
-| 2 | AI and Repository Integration | Ensure AI estimations and repo file reading are robust. | #3, #4 | integration | not started | — |
+| 1 | Critical-path coverage | Defend against core logic and auth failures. | #1, #2 | integration | complete | context/archive/2026-06-02-testing-critical-path-coverage |
+| 2 | AI and Repository Integration | Ensure AI estimations and repo file reading are robust. | #3, #4 | integration | change opened | testing-ai-and-repository-integration |
 | 3 | External API Hardening | Harden the integration with the OpenRouter API. | #5 | integration | not started | — |
 
 ## 4. Stack

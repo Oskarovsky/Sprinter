@@ -4,7 +4,7 @@ export const PUBLIC_SUPABASE_URL = "http://127.0.0.1:54321";
 export const PUBLIC_SUPABASE_ANON_KEY = "test-anon-key";
 export const SUPABASE_SERVICE_ROLE_KEY = "REDACTED_SUPABASE_SECRET";
 
-export const OPENROUTER_API_KEY: string | undefined = undefined;
+export const OPENROUTER_API_KEY: string | undefined = "test-api-key";
 
 export const GITHUB_CLIENT_ID = "test-github-id";
 export const GITHUB_CLIENT_SECRET = "test-github-secret";

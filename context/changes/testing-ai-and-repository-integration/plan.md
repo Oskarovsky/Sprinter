@@ -174,20 +174,20 @@ This phase adds integration tests for the repository linking and "Sprinter Analy
 ### Phase 1: Test Setup & Utilities
 
 #### Automated
-- [x] 1.1 A test successfully uses a mocked API endpoint.
-- [x] 1.2 A test successfully uses a database utility to create and delete a record.
+- [x] 1.1 A test successfully uses a mocked API endpoint. — 05d8779
+- [x] 1.2 A test successfully uses a database utility to create and delete a record. — 05d8779
 
 #### Manual
-- [x] 1.3 The `msw` setup is clean and easy to extend.
-- [x] 1.4 The database utilities are well-documented and easy to use.
+- [x] 1.3 The `msw` setup is clean and easy to extend. — 05d8779
+- [x] 1.4 The database utilities are well-documented and easy to use. — 05d8779
 
 ### Phase 2: AI Integration Tests
 
 #### Automated
-- [ ] 2.1 `npm run test:integration` passes with tests covering success, fallback, and error cases for AI features.
+- [x] 2.1 `npm run test:integration` passes with tests covering success, fallback, and error cases for AI features.
 
 #### Manual
-- [ ] 2.2 The tests are easy to understand and cover the most important scenarios.
+- [x] 2.2 The tests are easy to understand and cover the most important scenarios.
 
 ### Phase 3: Repository Integration Tests
 
