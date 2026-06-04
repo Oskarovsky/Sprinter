@@ -181,7 +181,7 @@ Update the main `test-plan.md` to include a cookbook recipe for adding new API i
 ### Phase 2: Authentication Integration Tests
 
 #### Automated
-- [ ] 2.1 `npm run test:integration` passes with tests covering:
+- [x] 2.1 `npm run test:integration` passes with tests covering: — c749e22
     - Successful user signup.
     - Attempted signup with an existing email.
     - Successful user signin.
@@ -190,7 +190,7 @@ Update the main `test-plan.md` to include a cookbook recipe for adding new API i
 ### Phase 3: Vote Calculation Integration Tests
 
 #### Automated
-- [ ] 3.1 `npm run test:integration` passes with tests covering:
+- [x] 3.1 `npm run test:integration` passes with tests covering: — c749e22
     - Correct calculation for a standard set of votes.
     - Correct handling when there are no votes.
     - Correct calculation when votes are tied.
@@ -198,4 +198,4 @@ Update the main `test-plan.md` to include a cookbook recipe for adding new API i
 ### Phase 4: Cookbook Update
 
 #### Manual
-- [ ] 4.1 The `test-plan.md` file is updated with the new cookbook section.
+- [x] 4.1 The `test-plan.md` file is updated with the new cookbook section. — c749e22
