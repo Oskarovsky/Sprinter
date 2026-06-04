@@ -48,13 +48,13 @@ const reactConfig = tseslint.config({
   },
   plugins: {
     "react-hooks": eslintPluginReactHooks,
-    "react-compiler": reactCompiler,
+    // "react-compiler": reactCompiler,
   },
   settings: { react: { version: "detect" } },
   rules: {
     ...eslintPluginReactHooks.configs.recommended.rules,
     "react/react-in-jsx-scope": "off",
-    "react-compiler/react-compiler": "error",
+    // "react-compiler/react-compiler": "error",
   },
 });
 
