@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest --config ./vitest.config.ts --mode test",
+    "test:real-api": "env-cmd -f .env.test vitest --config ./vitest.config.real-api.ts",
     "smoke:gitlab-oauth": "npx tsx scripts/gitlab-oauth-smoke.ts",
     "smoke:gitlab-oauth:verify": "npx tsx scripts/gitlab-oauth-smoke.ts --verify"
   },
@@ -32,6 +33,8 @@
     "astro": "^6.3.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dotenv": "^17.4.2",
+    "env-cmd": "^11.0.0",
     "lucide-react": "^1.14.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
