@@ -65,7 +65,7 @@ orchestrator updates Status as artifacts appear on disk.
 |---|---|---|---|---|---|---|
 | 1 | Critical-path coverage | Defend against core logic and auth failures. | #1, #2 | integration | complete | context/archive/2026-06-02-testing-critical-path-coverage |
 | 2 | AI and Repository Integration | Ensure AI estimations and repo file reading are robust. | #3, #4 | integration | complete | context/changes/testing-ai-and-repository-integration |
-| 3 | External API Hardening | Harden the integration with the OpenRouter API. | #5 | integration | change opened | testing-external-api-hardening |
+| 3 | External API Hardening | Harden the integration with the OpenRouter API. | #5 | integration | planned | context/changes/testing-external-api-hardening |
 
 ## 4. Stack
 
