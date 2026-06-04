@@ -134,16 +134,16 @@ This phase will add a new section to the `README.md` file explaining how to run 
 
 #### Automated
 
-- [x] 1.1 The new `test:real-api` script runs the real API tests.
-- [x] 1.2 The default `test` script does not run the real API tests.
+- [x] 1.1 The new `test:real-api` script runs the real API tests. — d2c0115
+- [x] 1.2 The default `test` script does not run the real API tests. — d2c0115
 
 #### Manual
 
-- [x] 1.3 Create a `.env.test.local` file with a valid `OPENROUTER_API_KEY`.
-- [x] 1.4 Run the `test:real-api` script and see the tests pass.
+- [x] 1.3 Create a `.env.test.local` file with a valid `OPENROUTER_API_KEY`. — d2c0115
+- [x] 1.4 Run the `test:real-api` script and see the tests pass. — d2c0115
 
 ### Phase 2: Add Documentation
 
 #### Manual
 
-- [ ] 2.1 A developer can follow the instructions in the `README.md` to run the real API tests successfully.
+- [x] 2.1 A developer can follow the instructions in the `README.md` to run the real API tests successfully. — 544bcd4
