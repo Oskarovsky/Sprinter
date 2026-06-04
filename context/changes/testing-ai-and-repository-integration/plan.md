@@ -184,15 +184,15 @@ This phase adds integration tests for the repository linking and "Sprinter Analy
 ### Phase 2: AI Integration Tests
 
 #### Automated
-- [x] 2.1 `npm run test:integration` passes with tests covering success, fallback, and error cases for AI features.
+- [x] 2.1 `npm run test:integration` passes with tests covering success, fallback, and error cases for AI features. — 4e83b42
 
 #### Manual
-- [x] 2.2 The tests are easy to understand and cover the most important scenarios.
+- [x] 2.2 The tests are easy to understand and cover the most important scenarios. — 4e83b42
 
 ### Phase 3: Repository Integration Tests
 
 #### Automated
-- [ ] 3.1 `npm run test:integration` passes with tests covering repository linking and the "Sprinter Analyst" workflow.
+- [x] 3.1 `npm run test:integration` passes with tests covering repository linking and the "Sprinter Analyst" workflow.
 
 #### Manual
-- [ ] 3.2 The tests for the asynchronous workflow are reliable and easy to understand.
+- [x] 3.2 The tests for the asynchronous workflow are reliable and easy to understand.
