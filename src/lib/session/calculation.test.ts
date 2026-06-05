@@ -1,6 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { createClient } from "@supabase/supabase-js";
+<<<<<<< HEAD
 import { listParticipation, computeHumanAverage, extractHumanStoryPoints, formatHumanAverage } from "./";
+=======
+import {
+  listParticipation,
+  computeHumanAverage,
+  extractHumanStoryPoints,
+  formatHumanAverage,
+} from "./";
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
 
 // --- Test Setup ---
 const SUPABASE_URL = process.env.PUBLIC_SUPABASE_URL!;
@@ -30,7 +39,15 @@ describe("Session Business Logic", () => {
     });
 
     it("extractHumanStoryPoints should extract non-null story points", () => {
+<<<<<<< HEAD
       const participation = [{ story_points: 5 }, { story_points: 8 }, { story_points: null }];
+=======
+      const participation = [
+        { story_points: 5 },
+        { story_points: 8 },
+        { story_points: null },
+      ];
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       expect(extractHumanStoryPoints(participation as any)).toEqual([5, 8]);
     });
   });
@@ -42,6 +59,7 @@ describe("Session Business Logic", () => {
     let testTaskId: string;
 
     beforeAll(async () => {
+<<<<<<< HEAD
       const {
         data: { user },
         error: userError,
@@ -49,12 +67,16 @@ describe("Session Business Logic", () => {
         email: `list-part-user-${Date.now()}@example.com`,
         email_confirm: true,
       });
+=======
+      const { data: { user }, error: userError } = await supabaseAdmin.auth.admin.createUser({ email: `list-part-user-${Date.now()}@example.com`, email_confirm: true });
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       if (userError) throw userError;
       testUserId = user.id;
 
       // Create a profile for the user, which is required for the JOIN in the view
       await supabaseAdmin.from("profiles").insert({ user_id: testUserId, display_name: "Test User" });
 
+<<<<<<< HEAD
       const { data: session, error: sessionError } = await supabaseAdmin
         .from("planning_sessions")
         .insert({ slug: `test-list-part-${Date.now()}` })
@@ -68,6 +90,13 @@ describe("Session Business Logic", () => {
         .insert({ session_id: testSessionId, title: "Test Task", created_by: testUserId })
         .select()
         .single();
+=======
+      const { data: session, error: sessionError } = await supabaseAdmin.from("planning_sessions").insert({ slug: `test-list-part-${Date.now()}` }).select().single();
+      if (sessionError) throw sessionError;
+      testSessionId = session.id;
+
+      const { data: task, error: taskError } = await supabaseAdmin.from("tasks").insert({ session_id: testSessionId, title: "Test Task", created_by: testUserId }).select().single();
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       if (taskError) throw taskError;
       testTaskId = task.id;
     });
@@ -85,6 +114,7 @@ describe("Session Business Logic", () => {
 
       // Calling with the admin client bypasses RLS
       const { data, error } = await listParticipation(supabaseAdmin, testTaskId);
+<<<<<<< HEAD
 
       expect(error).toBeNull();
       expect(data).toHaveLength(1);
@@ -95,6 +125,18 @@ describe("Session Business Logic", () => {
 
       const { data: revealedData, error: revealedError } = await listParticipation(supabaseAdmin, testTaskId);
 
+=======
+      
+      expect(error).toBeNull();
+      expect(data).toHaveLength(1);
+      
+      // The story_points might be null due to the CASE in the view if the task is not 'revealed'
+      // and we are not calling as the user. Let's update the task to be revealed.
+      await supabaseAdmin.from("tasks").update({ status: 'revealed' }).eq("id", testTaskId);
+      
+      const { data: revealedData, error: revealedError } = await listParticipation(supabaseAdmin, testTaskId);
+      
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       expect(revealedError).toBeNull();
       expect(revealedData).toHaveLength(1);
       expect(revealedData![0].story_points).toBe(8);

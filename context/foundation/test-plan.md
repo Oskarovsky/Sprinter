@@ -116,6 +116,7 @@ An integration test verifies a piece of logic against a real dependency, like a 
 - **Database Client**: Use the `supabaseAdmin` client, which has service role privileges to bypass RLS for test setup.
 - **Reference test**: See the "listParticipation" test in `src/lib/session/calculation.test.ts`.
 - **Run locally**: `npm run test:integration -- src/lib/session/calculation.test.ts`.
+<<<<<<< HEAD
 
 ### 6.3 Adding a test for a new API endpoint
 
@@ -129,10 +130,25 @@ However, for simple, self-contained API endpoints (like authentication), you can
 - **Run locally**: `npm run test:integration -- src/pages/api/auth/auth.test.ts`.
 
 ### 6.4 Adding an e2e test
+=======
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
 
-- TBD — see §3 Phase 1.
+### 6.3 Adding a test for a new API endpoint
 
+<<<<<<< HEAD
 ### 6.5 Mocking External APIs (MSW)
+=======
+Testing API endpoints directly can be brittle, especially when they involve complex authentication or orchestration logic. The preferred approach is to test the underlying business logic functions directly with a combination of unit and integration tests (see above).
+
+However, for simple, self-contained API endpoints (like authentication), you can test the handler directly by mocking its context.
+
+- **Location**: `src/pages/api/.../endpoint.test.ts`.
+- **Strategy**: Mock the `APIContext` object and the Supabase client (`@/lib/supabase`). Call the exported handler function directly and assert on the mocked calls.
+- **Reference test**: `src/pages/api/auth/auth.test.ts`.
+- **Run locally**: `npm run test:integration -- src/pages/api/auth/auth.test.ts`.
+
+### 6.4 Adding an e2e test
+>>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
 
 For tests requiring external HTTP APIs (e.g. OpenRouter, GitHub, GitLab), we mock the network layer using Mock Service Worker (MSW).
 
