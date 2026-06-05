@@ -1,0 +1,8 @@
+{
+  "hooks": {
+    "per-edit": [
+      "npm run lint",
+      "npm run typecheck"
+    ]
+  }
+}

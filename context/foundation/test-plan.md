@@ -63,9 +63,9 @@ orchestrator updates Status as artifacts appear on disk.
 
 | # | Phase name | Goal (one line) | Risks covered | Test types | Status | Change folder |
 |---|---|---|---|---|---|---|
-| 1 | Critical-path coverage | Defend against core logic and auth failures. | #1, #2 | integration | change opened | context/changes/testing-critical-path-coverage |
-| 2 | AI and Repository Integration | Ensure AI estimations and repo file reading are robust. | #3, #4 | integration | not started | — |
-| 3 | External API Hardening | Harden the integration with the OpenRouter API. | #5 | integration | not started | — |
+| 1 | Critical-path coverage | Defend against core logic and auth failures. | #1, #2 | integration | complete | context/archive/2026-06-02-testing-critical-path-coverage |
+| 2 | AI and Repository Integration | Ensure AI estimations and repo file reading are robust. | #3, #4 | integration | complete | context/changes/testing-ai-and-repository-integration |
+| 3 | External API Hardening | Harden the integration with the OpenRouter API. | #5 | integration | planned | context/changes/testing-external-api-hardening |
 
 ## 4. Stack
 
@@ -74,7 +74,7 @@ The classic test base for this project.
 | Layer | Tool | Version | Notes |
 |---|---|---|---|
 | unit + integration | Vitest | v1.6.0 | Used for unit and integration tests. |
-| API mocking | none yet — see Phase 3 | | |
+| API mocking | MSW (Mock Service Worker) | ^2.14.6 | Used to mock external APIs like OpenRouter, GitHub, and GitLab. |
 | e2e | none yet | | |
 | accessibility | none yet | | |
 
@@ -102,22 +102,44 @@ the relevant rollout phase ships; before that, the sub-section reads
 
 ### 6.1 Adding a unit test
 
-- **Location**: next to the unit under test.
-- **Naming**: `<module>.test.ts`.
-- **Reference test**: `src/lib/utils.test.ts`.
-- **Run locally**: `npm test -- <path_to_test>`.
+- **Location**: next to the unit under test, e.g., `src/lib/session/`.
+- **Naming**: `<module>.test.ts`, e.g. `average.test.ts` if testing `average.ts`.
+- **Reference test**: See the "Average Calculation" tests in `src/lib/session/calculation.test.ts`.
+- **Run locally**: `npm test -- src/lib/session/calculation.test.ts`.
 
 ### 6.2 Adding an integration test
 
+An integration test verifies a piece of logic against a real dependency, like a database.
+
+- **Location**: In a test file for the feature, e.g. `src/lib/session/calculation.test.ts` for session logic.
+- **Setup**: Use `beforeAll` to create necessary test data (e.g., users, sessions, tasks) in the local test database. Use `afterAll` to clean up all created data.
+- **Database Client**: Use the `supabaseAdmin` client, which has service role privileges to bypass RLS for test setup.
+- **Reference test**: See the "listParticipation" test in `src/lib/session/calculation.test.ts`.
+- **Run locally**: `npm run test:integration -- src/lib/session/calculation.test.ts`.
+
+### 6.3 Adding a test for a new API endpoint
+
+Testing API endpoints directly can be brittle, especially when they involve complex authentication or orchestration logic. The preferred approach is to test the underlying business logic functions directly with a combination of unit and integration tests (see above).
+
+However, for simple, self-contained API endpoints (like authentication), you can test the handler directly by mocking its context.
+
+- **Location**: `src/pages/api/.../endpoint.test.ts`.
+- **Strategy**: Mock the `APIContext` object and the Supabase client (`@/lib/supabase`). Call the exported handler function directly and assert on the mocked calls.
+- **Reference test**: `src/pages/api/auth/auth.test.ts`.
+- **Run locally**: `npm run test:integration -- src/pages/api/auth/auth.test.ts`.
+
+### 6.4 Adding an e2e test
+
 - TBD — see §3 Phase 1.
 
-### 6.3 Adding an e2e test
+### 6.5 Mocking External APIs (MSW)
 
-- TBD — see §3 Phase 1.
+For tests requiring external HTTP APIs (e.g. OpenRouter, GitHub, GitLab), we mock the network layer using Mock Service Worker (MSW).
 
-### 6.4 Adding a test for a new API endpoint
-
-- TBD — see §3 Phase 1.
+- **Location**: Setup at `src/test/mocks/http.ts` and integrated globally via `src/test/vitest.setup.ts`.
+- **Strategy**: Define standard endpoint handlers in `http.ts` and export the mock `server` from `msw/node`. In individual tests, ensure `isAiConfigured()` (or corresponding auth) is enabled (by mocking or setting a mock value in `src/test/mocks/astro-env-server.ts`).
+- **Reference test**: `tests/integration/ai.test.ts` and `tests/integration/repo.test.ts`.
+- **Run locally**: `npx vitest run tests/integration/ai.test.ts`.
 
 ## 7. What We Deliberately Don't Test
 

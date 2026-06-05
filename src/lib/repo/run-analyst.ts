@@ -136,14 +136,10 @@ export async function runAnalystForTask({ taskId, sessionId, serviceClient }: Ru
     }
 
     const selectedPaths = selectFilesForTask(tree, task);
-<<<<<<< HEAD
     console.log(`[runAnalystForTask] selectFilesForTask selected ${selectedPaths.length} paths:`, selectedPaths);
-
-=======
     const blobShaByPath = new Map(
       tree.filter((entry) => entry.type === "blob").map((entry) => [entry.path, entry.sha]),
     );
->>>>>>> de547d767ff027a466953f41177fb1de3349dcad
     const files = await fetchFileContents(
       connection,
       selectedPaths,
