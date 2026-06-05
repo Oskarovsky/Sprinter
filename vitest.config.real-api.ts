@@ -8,15 +8,11 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(rootDir, "src"),
-      "astro:env/server": path.resolve(rootDir, "src/test/mocks/astro-env-server.ts"),
+      "astro:env/server": path.resolve(rootDir, "src/test/real-api-astro-env-server.ts"),
     },
   },
   test: {
-    exclude: ["**/*.real-api.test.ts"],
-    setupFiles: ["src/test/vitest.setup.ts"],
-    coverage: {
-      provider: "v8",
-      reporter: ["text"],
-    },
+    include: ["**/ai.real-api.test.ts"],
+    testTimeout: 15000,
   },
 });

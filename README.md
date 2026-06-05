@@ -55,6 +55,24 @@ npm run dev
 - `npm run lint` - Run ESLint with type-checked rules
 - `npm run lint:fix` - Auto-fix ESLint issues
 - `npm run format` - Run Prettier
+- `npm test` - Run all tests except real API tests
+- `npm run test:real-api` - Run tests against the real OpenRouter API
+
+## Running Real API Tests
+
+To run the tests that use the real OpenRouter API, you need to create a `.env.test.local` file in the root of the project with your OpenRouter API key:
+
+```bash
+echo "OPENROUTER_API_KEY=your-key-here" > .env.test.local
+```
+
+Then, you can run the tests with the following command:
+
+```bash
+npm run test:real-api
+```
+
+These tests are excluded from the default `npm test` command to avoid using the real API and incurring costs during normal development.
 
 ## Project Structure
 
