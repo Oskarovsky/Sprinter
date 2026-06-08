@@ -2,13 +2,8 @@
   "package": "@przeprogramowani/10x-cli",
   "version": "1.6.1",
   "manifestVersion": 2,
-<<<<<<< HEAD
   "lastApplied": "2026-06-04T08:33:26.357Z",
   "lessonId": "m3l2",
-=======
-  "lastApplied": "2026-06-02T14:18:11.910Z",
-  "lessonId": "m3l1",
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
   "course": "10xdevs3",
   "tool": "cursor",
   "files": {

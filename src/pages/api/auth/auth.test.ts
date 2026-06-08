@@ -41,31 +41,16 @@ describe("Authentication API Handlers", () => {
     // Before all tests, make our mocked createClient return our mock client
     (createClient as MockedFunction<typeof createClient>).mockReturnValue(mockSupabaseClient as any);
   });
-<<<<<<< HEAD
-
-=======
-  
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
   // --- Signup Tests ---
   describe("POST /api/auth/signup", () => {
     const testUser = {
       email: `test-signup-${Date.now()}@example.com`,
       password: "password123",
     };
-<<<<<<< HEAD
-
-=======
-    
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
     it("should call Supabase signUp and redirect on success", async () => {
       const formData = new FormData();
       formData.append("email", testUser.email);
       formData.append("password", testUser.password);
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       const context = createMockContext(formData);
       mockSupabaseClient.auth.signUp.mockResolvedValueOnce({ error: null });
 
@@ -88,11 +73,6 @@ describe("Authentication API Handlers", () => {
       mockSupabaseClient.auth.signUp.mockResolvedValueOnce({ error: mockError });
 
       await signUpHandler(context);
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       expect(context.redirect).toHaveBeenCalledWith(`/auth/signup?error=${encodeURIComponent(mockError.message)}`);
     });
   });
@@ -108,11 +88,6 @@ describe("Authentication API Handlers", () => {
       const formData = new FormData();
       formData.append("email", testUser.email);
       formData.append("password", testUser.password);
-<<<<<<< HEAD
-
-=======
-      
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       const context = createMockContext(formData);
       mockSupabaseClient.auth.signInWithPassword.mockResolvedValueOnce({ error: null });
 
