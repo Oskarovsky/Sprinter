@@ -131,14 +131,11 @@
           "references/test-plan-schema.md",
           "SKILL.md"
         ]
-<<<<<<< HEAD
       },
       "10x-tdd": {
         "files": [
           "SKILL.md"
         ]
-=======
->>>>>>> 0724f46f8394d1cd00dfb003f22d539b384b71bd
       }
     },
     "prompts": [
