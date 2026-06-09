@@ -15,7 +15,7 @@ export async function createUser(email, password) {
   if (error) {
     throw error;
   }
-  // Create a profile for the new user
+    // Create a profile for the new user
   const { error: profileError } = await supabase.from("profiles").insert({
     user_id: data.user.id,
     display_name: email.split("@")[0],

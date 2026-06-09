@@ -71,7 +71,7 @@ describe("Repository Integration Tests", () => {
           provider: "github",
           accessMode: "public",
           repoUrl: "https://github.com/user/repo",
-        }),
+        })
       );
       expect(response.status).toBe(200);
       const data = await response.json();
@@ -93,7 +93,7 @@ describe("Repository Integration Tests", () => {
           provider: "github",
           accessMode: "public",
           repoUrl: "invalid-url",
-        }),
+        })
       );
       expect(response.status).toBe(400);
       const data = await response.json();

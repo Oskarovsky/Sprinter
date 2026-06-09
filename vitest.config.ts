@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   test: {
-    exclude: ["**/*.real-api.test.ts", "**/node_modules/**"],
+    exclude: ["**/*.real-api.test.ts", "e2e/**", "**/node_modules/**"],
     setupFiles: ["src/test/vitest.setup.ts"],
     coverage: {
       provider: "v8",

@@ -1,5 +1,5 @@
-import { beforeAll, afterEach, afterAll } from "vitest";
-import { server } from "./mocks/http";
+import { beforeAll, afterEach, afterAll } from 'vitest';
+import { server } from './mocks/http';
 
 beforeAll(() => server.listen());
 

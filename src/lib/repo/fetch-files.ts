@@ -71,29 +71,44 @@ async function fetchSingleFile(
   tokenOptions: FetchFileTokenOptions,
   cacheOptions?: FetchFileCacheOptions,
 ): Promise<string | null> {
-  try {
-    const accessToken = connection.access_mode === "private" ? tokenOptions.accessToken ?? undefined : undefined;
+  const blobSha = cacheOptions?.blobShaByPath.get(path) ?? "";
 
-    if (connection.provider === "github") {
-      const parsed = parseGithubRepoUrl(connection.repo_url);
-      if (!parsed) {
-        console.error(`[fetchSingleFile] Could not parse GitHub repo URL: ${connection.repo_url}`);
-        return null;
-      }
-      return await fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
+  if (cacheOptions && blobSha) {
+    const cached = await getCachedBlobContent(cacheOptions.serviceClient, cacheOptions.connectionId, path, blobSha);
+    if (cached !== null) {
+      return cached;
     }
+  }
 
+  const accessToken = connection.access_mode === "private" ? (tokenOptions.accessToken ?? undefined) : undefined;
+  let content: string | null = null;
+
+  if (connection.provider === "github") {
+    const parsed = parseGithubRepoUrl(connection.repo_url);
+    if (!parsed) {
+      console.error(`[fetchSingleFile] Could not parse GitHub repo URL: ${connection.repo_url}`);
+      return null;
+    }
+    content = await fetchGithubBlobContent(parsed.owner, parsed.repo, path, ref, accessToken);
+  } else {
     const baseUrl = connection.gitlab_base_url ?? DEFAULT_GITLAB_BASE_URL;
     const parsed = parseGitlabRepoUrl(connection.repo_url, baseUrl);
     if (!parsed) {
-      console.error(`[fetchSingleFile] Could not parse GitLab repo URL: ${connection.repo_url}`);
       return null;
     }
 
     const auth: GitlabTokenAuth = tokenOptions.gitlabPat ? "pat" : "oauth";
-    return await fetchGitlabBlobContent(baseUrl, parsed.projectPath, path, ref, accessToken, auth);
-  } catch (error) {
-    console.error(`[fetchSingleFile] Unhandled exception fetching ${path} from ${connection.repo_url}:`, error);
+    content = await fetchGitlabBlobContent(baseUrl, parsed.projectPath, path, ref, accessToken, auth);
+  }
+
+  if (content === null) {
     return null;
   }
+
+  const storable = truncateFileContent(content, MAX_FILE_CONTENT_CHARS);
+  if (cacheOptions && blobSha) {
+    await putCachedBlobContent(cacheOptions.serviceClient, cacheOptions.connectionId, path, blobSha, storable);
+  }
+
+  return storable;
 }

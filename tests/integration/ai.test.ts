@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { generateDraftFromNotes, generateCoachPrompts, generateAnalystVote } from "@/lib/ai";
+import {
+  generateDraftFromNotes,
+  generateCoachPrompts,
+  generateAnalystVote,
+} from "@/lib/ai";
 import * as config from "@/lib/ai/config";
 import { createUser, deleteUser } from "@/test/utils/db";
 

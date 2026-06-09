@@ -41,16 +41,19 @@ describe("Authentication API Handlers", () => {
     // Before all tests, make our mocked createClient return our mock client
     (createClient as MockedFunction<typeof createClient>).mockReturnValue(mockSupabaseClient as any);
   });
+  
   // --- Signup Tests ---
   describe("POST /api/auth/signup", () => {
     const testUser = {
       email: `test-signup-${Date.now()}@example.com`,
       password: "password123",
     };
+    
     it("should call Supabase signUp and redirect on success", async () => {
       const formData = new FormData();
       formData.append("email", testUser.email);
       formData.append("password", testUser.password);
+      
       const context = createMockContext(formData);
       mockSupabaseClient.auth.signUp.mockResolvedValueOnce({ error: null });
 
@@ -73,6 +76,7 @@ describe("Authentication API Handlers", () => {
       mockSupabaseClient.auth.signUp.mockResolvedValueOnce({ error: mockError });
 
       await signUpHandler(context);
+      
       expect(context.redirect).toHaveBeenCalledWith(`/auth/signup?error=${encodeURIComponent(mockError.message)}`);
     });
   });
@@ -88,6 +92,7 @@ describe("Authentication API Handlers", () => {
       const formData = new FormData();
       formData.append("email", testUser.email);
       formData.append("password", testUser.password);
+      
       const context = createMockContext(formData);
       mockSupabaseClient.auth.signInWithPassword.mockResolvedValueOnce({ error: null });
 

@@ -1,45 +1,36 @@
-import { test as base, expect } from "@playwright/test";
-
-// Override storage state for this file to test unauthenticated user flow.
-const test = base.extend({
-  storageState: ({}, use) => use({ cookies: [], origins: [] }),
-});
+import { test, expect } from "@playwright/test";
 
 /**
- * SEED TEST
+ * This is a seed test. It's a template for writing all other E2E tests in this project.
  *
- * This test demonstrates the conventions for writing E2E tests in this project.
- * It is used by the /10x-e2e skill as a template for generating new tests.
+ * It demonstrates the following conventions:
+ * 1.  **Test Isolation**: The test is fully self-contained. It performs its own setup and teardown
+ *     and does not depend on the state of any other test.
+ * 2.  **State-based Waiting**: It uses `page.waitForURL()` to wait for a specific application
+ *     state (a redirect) rather than waiting for an arbitrary amount of time.
+ * 3.  **User-facing Selectors**: It uses `page.getByRole()` to find elements, which is how a user
+ *     would find them. It avoids brittle CSS selectors or XPath.
+ * 4.  **Risk-based Naming**: The test name clearly links to a business/user risk documented in
+ *     the project's test plan, explaining *why* the test exists.
  *
- * This seed test covers a critical authentication scenario for GUEST users.
- *
- * Conventions demonstrated:
- * - Using `getByRole` for robust, user-facing selectors.
- * - Waiting for state changes (e.g., URL changes) instead of fixed timeouts.
- * - Linking the test name to a business risk from the test plan (`test-plan.md`).
- * - Ensuring tests are isolated and can run independently.
- * - Using web-first assertions like `toBeVisible()` and `toHaveURL()`.
+ * When the agent is asked to generate new E2E tests, it will use this file as a reference
+ * for conventions, style, and structure.
  */
-test("[Risk #2] Unauthenticated user is redirected to signin from protected route", async ({
+test("[Risk #2] Unauthenticated user is redirected from protected route", async ({
   page,
 }) => {
-  // 1. ARRANGE
-  // The user is unauthenticated by default in a new browser context.
-  // The protected route is `/dashboard`.
-
-  // 2. ACT
-  // Attempt to navigate to the protected dashboard page.
+  // 1. ARRANGE: Go to a protected route that requires authentication.
+  // This test is read-only and doesn't require data setup, so ARRANGE is simple.
   await page.goto("/dashboard");
 
-  // 3. ASSERT
-  // The user should be redirected to the sign-in page.
-  await expect(page).toHaveURL(/.*\/auth\/signin/);
+  // 2. ACT: No action is needed. The application should automatically redirect.
 
-  // The sign-in form/heading should be visible. This confirms the user is on the correct page
-  // and that the page has rendered correctly.
-  const mainHeading = page.getByRole("heading", {
-    name: /Sign In/i,
-  });
+  // 3. ASSERT: Verify the user is redirected to the sign-in page.
+  // First, wait for the URL to change to the sign-in page.
+  await page.waitForURL(/.*\/auth\/signin/);
+
+  // Second, verify the content of the sign-in page is correct.
+  const mainHeading = page.getByRole("heading", { name: /Sign in/i });
   await expect(mainHeading).toBeVisible();
 
   // This test is read-only, so no cleanup is necessary.

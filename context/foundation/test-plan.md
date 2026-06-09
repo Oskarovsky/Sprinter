@@ -130,7 +130,7 @@ However, for simple, self-contained API endpoints (like authentication), you can
 
 ### 6.4 Adding an e2e test
 
-### 6.3 Adding a test for a new API endpoint
+- TBD — see §3 Phase 1.
 
 ### 6.5 Mocking External APIs (MSW)
 

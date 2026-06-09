@@ -1,13 +1,13 @@
-import { setupServer } from "msw/node";
-import { http, HttpResponse } from "msw";
+import { setupServer } from 'msw/node';
+import { http, HttpResponse } from 'msw';
 
 const handlers = [
   // Mock OpenRouter
-  http.post("https://openrouter.ai/api/v1/chat/completions", async ({ request }) => {
+  http.post('https://openrouter.ai/api/v1/chat/completions', async ({ request }) => {
     const body = await request.json();
-    const userMessage = body.messages.find((m) => m.role === "user");
+    const userMessage = body.messages.find(m => m.role === 'user');
 
-    if (userMessage.content.includes("File snippets:")) {
+    if (userMessage.content.includes('File snippets:')) {
       // Analyst prompt
       return HttpResponse.json({
         choices: [
@@ -15,21 +15,21 @@ const handlers = [
             message: {
               content: JSON.stringify({
                 storyPoints: 5,
-                rationale: "Mocked AI analyst rationale",
+                rationale: 'Mocked AI analyst rationale',
               }),
             },
           },
         ],
       });
-    } else if (userMessage.content.includes("Task title:")) {
+    } else if (userMessage.content.includes('Task title:')) {
       // Coach prompt
       return HttpResponse.json({
         choices: [
           {
             message: {
               content: JSON.stringify({
-                summary: "Mocked AI coach summary",
-                questions: ["Question 1?", "Question 2?", "Question 3?"],
+                summary: 'Mocked AI coach summary',
+                questions: ['Question 1?', 'Question 2?', 'Question 3?'],
               }),
             },
           },
@@ -44,10 +44,10 @@ const handlers = [
               content: JSON.stringify({
                 drafts: [
                   {
-                    title: "Mocked AI draft title",
-                    description: "Mocked AI draft description",
-                    acceptanceCriteria: ["Criterion 1", "Criterion 2"],
-                    openQuestions: ["Question 1", "Question 2"],
+                    title: 'Mocked AI draft title',
+                    description: 'Mocked AI draft description',
+                    acceptanceCriteria: ['Criterion 1', 'Criterion 2'],
+                    openQuestions: ['Question 1', 'Question 2'],
                   },
                 ],
               }),
@@ -58,15 +58,15 @@ const handlers = [
     }
   }),
   // Mock GitHub
-  http.get("https://api.github.com/repos/:owner/:repo", () => {
+  http.get('https://api.github.com/repos/:owner/:repo', () => {
     return HttpResponse.json({
-      full_name: "mocked/repo",
+      full_name: 'mocked/repo',
     });
   }),
   // Mock GitLab
-  http.get("https://gitlab.com/api/v4/projects/:id", () => {
+  http.get('https://gitlab.com/api/v4/projects/:id', () => {
     return HttpResponse.json({
-      name: "mocked-repo",
+      name: 'mocked-repo',
     });
   }),
 ];

@@ -42,7 +42,7 @@ export default function SignInForm({ serverError }: Props) {
   }
 
   return (
-    <form method="POST" action="/api/auth/signin" className="space-y-4" onSubmit={handleSubmit} noValidate>
+    <form method="POST" action="/api/auth/signin" className="space-y-4" noValidate>
       <FormField
         id="email"
         type="email"
@@ -81,9 +81,13 @@ export default function SignInForm({ serverError }: Props) {
 
       <ServerError message={serverError} />
 
-      <SubmitButton pendingText="Signing in..." icon={<LogIn className="size-4" />}>
+      <button
+        type="submit"
+        className="w-full rounded-lg bg-purple-600 px-4 py-2 font-medium text-white transition-colors hover:bg-purple-500 flex items-center gap-2 justify-center"
+      >
+        <LogIn className="size-4" />
         Sign in
-      </SubmitButton>
+      </button>
 
       <AuthDivider />
       <GoogleAuthButton />
