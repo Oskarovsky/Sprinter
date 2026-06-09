@@ -3,7 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "env-cmd -f .env.test astro dev",
     "dev:clean": "rm -rf node_modules/.vite .astro dist .wrangler/tmp node_modules/.cache/wrangler && astro dev",
     "build": "astro build",
     "preview": "astro preview",
@@ -15,7 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "test:integration": "vitest --config ./vitest.config.ts --mode test",
     "test:real-api": "env-cmd -f .env.test vitest --config ./vitest.config.real-api.ts",
-    "test:e2e": "playwright test",
+    "test:e2e": "env-cmd -f .env.test playwright test",
     "smoke:gitlab-oauth": "npx tsx scripts/gitlab-oauth-smoke.ts",
     "smoke:gitlab-oauth:verify": "npx tsx scripts/gitlab-oauth-smoke.ts --verify"
   },
