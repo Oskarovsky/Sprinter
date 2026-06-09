@@ -1,0 +1,185 @@
+do .gitignore.
+
+Od ryzyk do testów E2E
+
+Masz agenta, który potrafi uruchomić aplikację i wchodzić z nią w interakcję. Teraz pytanie: co ma testować?
+
+Masz context/foundation/test-plan.md z poprzednich lekcji. Masz w nim ryzyka biznesowe, uporządkowane przez impact i likelihood. Część z nich wymaga testów E2E, bo dotyczą ścieżek użytkownika, a nie izolowanych funkcji.
+
+Skąd wiadomo, które ryzyka to ryzyka E2E? Krótka heurystyka: jeśli ryzyko przechodzi przez wiele granic systemu (auth, routing, API, baza) albo istnieje tylko w wyrenderowanym UI, potrzebuje E2E. Jeśli można je sprawdzić na izolowanej funkcji, wystarczy test jednostkowy z lekcji na ich temat (M3L2).
+
+E2E nie oznacza "zero mockowania". Wewnętrzne granice (auth, routing, baza) powinny być prawdziwe, bo to w nich kryją się ryzyka integracyjne. Ale drogie lub niedeterministyczne zewnętrzne API (modele LLM, bramki płatności) warto mockować na poziomie sieci. W 10xCards test E2E generowania fiszek mockuje OpenRouter na warstwie HTTP, zachowując prawdziwy auth, API i bazę. To pragmatyczny wzorzec, nie wyjątek.
+
+Kluczowa zasada: nie generujesz testów E2E od zera. Otwierasz context/foundation/test-plan.md, wybierasz 1-3 najwyższe ryzyka, które wymagają pokrycia na poziomie przeglądarki, i dajesz je agentowi jako wejście. Jeśli twoja aplikacja nie ma frontendu, E2E może oznaczać scenariusze API: request → routing → logika → baza, bez przeglądarki. Mechanizmy kontroli jakości (seed test, reguły, review) działają tak samo. Zmienia się tylko warstwa interakcji.
+
+Pamiętaj, aby zachowawczo podchodzić do liczby testów E2E: są one najwolniejsze i najbardziej kruche spośród wszystkich typów testów. Jednocześnie dają najlepszą informację zwrotną o stabilności całego systemu na konkretnych ścieżkach użytkownika.
+
+/10x-e2e: łączy się z /10x-implement i /10x-tdd
+
+Masz ryzyka wybrane z test-plan.md i agenta, który potrafi uruchomić aplikację. Pokryciem tych ryzyk na poziomie przeglądarki zajmuje się skill /10x-e2e. To nie jest osobny generator testów obok procesu dla unitów. To skill świadomy /10x-implement i /10x-tdd z lekcji o testach jednostkowych (M3L2). Czyta ten sam context/changes/<change-id>/plan.md, korzysta z tej samej sekcji ## Progress, realizuje te same fazy i kończy je tym samym rytuałem commita. Zmienia tylko wewnętrzną pętlę: zamiast pisać kod produkcyjny (/10x-implement) albo najpierw czerwony test jednostkowy (/10x-tdd), generuje i utwardza test na poziomie przeglądarki wobec działającej aplikacji.
+
+Pętla jednej fazy wygląda tak:
+
+PLAN     → wybierz ryzyko, zmapuj ścieżkę (planner Playwrighta albo szablon promptu)
+GENERATE → zamień ścieżkę w test wg seed testu i reguł E2E
+REVIEW   → sprawdź wobec pięciu antywzorców; popraw przez re-prompt po nazwie
+VERIFY   → uruchom na zielono, potem celowo zepsuj chronione zachowanie i potwierdź, że test pada
+
+Pobierz skill paczką artefaktów dla tej lekcji:
+
+npx @przeprogramowani/10x-cli@latest get m3l4
+
+Ta paczka instaluje skill /10x-e2e, czyli jedno źródło całego workflow E2E (reguły jakości, pięć antywzorców, wzorzec seed testu i szablon promptu w jego referencjach), oraz cienki wskaźnik CLAUDE-m3l4 doklejony do twojego CLAUDE.md: kilka twardych reguł i odwołanie do skilla, które agent czyta automatycznie przed generowaniem testów.
+
+Jeśli chcesz nie tylko uruchamiać, ale i rozumieć: zanim odpalisz /10x-e2e, skieruj na niego prompt skill-explainer z lekcji Od chatbota do Agenta: tech stack, skille i metaprompting (M1L2). Rozłoży skill na mechanikę i decyzje projektowe, żebyś wiedział, co dokładnie prowadzi twój przepływ E2E. Ten sam prompt działa na każdy nowy skill w kursie.
+
+Nie każda faza planu zasługuje na test E2E. Zanim /10x-e2e cokolwiek wygeneruje, sprawdza dla danej fazy trzy rzeczy: czy ryzyko jest naprawdę na poziomie przeglądarki (przechodzi przez wiele granic systemu, czyli auth, routing, API, baza, albo istnieje tylko w wyrenderowanym UI), czy testowana funkcjonalność jest już zbudowana i aplikacja się uruchamia, i czy nie istnieje już zielony test E2E dla tego ryzyka.
+
+Jeśli ryzyko da się udowodnić izolowaną funkcją, skill przekierowuje fazę do /10x-tdd albo /10x-implement. E2E to najwolniejsza i najbardziej krucha warstwa, więc sięgasz po nią tylko tam, gdzie tańszy test by skłamał. Jeśli funkcjonalność jeszcze nie istnieje, skill się zatrzymuje: przeglądarka nie ma czego prowadzić, więc najpierw budujesz feature przez /10x-implement, a po E2E wracasz.
+
+Dzięki wspólnej sekcji ## Progress mieszasz tryby w obrębie jednego planu, dokładnie tak, jak /10x-tdd i /10x-implement w lekcji o testach jednostkowych:
+
+/10x-implement <change-id> phase 1   # zbuduj funkcjonalność
+/10x-tdd <change-id> phase 2         # kontrakt API test-first
+/10x-e2e <change-id> phase 6         # ścieżka użytkownika end-to-end
+
+Nie tworzysz drugiej listy zadań i nie rozbijasz zmiany na równoległe procesy. Wszystkie trzy skille zapisują postęp w tym samym ## Progress, więc po prostu wybierasz właściwy tryb dla konkretnej fazy.
+
+W kroku PLAN masz dwie drogi do tego samego kontraktu. Pierwsza, gdy chcesz, by agent sam wyeksplorował aplikację, to przepływ planner→generator, który Playwright wprowadził w wersji 1.56 jako trzy wyspecjalizowane agenty testowe:
+
+
+
+
+
+Planner — eksploruje aplikację i generuje plan testów w Markdown. Opisuje scenariusze, kroki i oczekiwane wyniki.
+
+
+
+Generator — przekształca plan w wykonywalny kod TypeScript, walidując selektory na żywej aplikacji.
+
+
+
+Healer — analizuje stan UI spadających testów i proponuje poprawki selektorów.
+
+Tego przepływu nie składasz ręcznie. /10x-e2e prowadzi go za ciebie i wie, że do eksploracji aplikacji może sięgnąć po Playwright CLI z poprzedniej sekcji. Po twojej stronie zostaje jedno: seed test (seed.spec.ts), który pokazuje agentowi, jak wygląda poprawny test w twoim projekcie.
+
+Konkretny przykład z Sprinter: w test-plan.md najwyższe ryzyko E2E to "utrata wygenerowanych glowsow lub wyniku  po odświeżeniu strony". Ten scenariusz przechodzi przez OpenRouter (mockowany na warstwie HTTP), API zapisu, bazę danych i renderowanie po stronie serwera, więc żaden test jednostkowy tego nie pokryje. Drugie ryzyko, "niezalogowany użytkownik widzi chronione zasoby", to z kolei pełna droga przez bramkę autoryzacji: middleware, przekazanie ciasteczka i przekierowanie. Podajesz te ryzyka skillowi, a on prowadzi resztę: Planner eksploruje aplikację przez snapshoty, generuje plan, Generator zamienia go w test. Brzmi świetnie, ale to dopiero połowa drogi.
+
+Seed test i reguły jakości
+
+W kroku GENERATE /10x-e2e zamienia zmapowaną ścieżkę w test, ale nie z powietrza. Prowadzą go dwie dźwignie jakości: seed test i reguły E2E. W lekcji o testach jednostkowych (M3L2) nauczyłeś się dawać agentowi konkretne, powiązane z ryzykiem wejście i wymuszać asercję behawioralną. W E2E te dwie dźwignie pełnią dokładnie tę rolę.
+
+Seed test (seed.spec.ts) to nie pusty rytuał. Dokumentacja Playwright mówi wprost: "Planner will also use this seed test as an example of all the generated tests." Jeśli seed używa getByRole, Generator też. Jeśli seed ma page.waitForTimeout(2000), Generator powieli ten antywzorzec w każdym wygenerowanym teście. Co pokażesz, to dostaniesz.
+
+Dobry seed test demonstruje agentowi cztery wzorce:
+
+Selektory oparte na rolach. getByRole('button', { name: 'Dodaj fiszkę' }) jest odporny na zmiany klas CSS, struktury DOM i refaktory komponentów. Dokumentacja Playwright rekomenduje: "Prefer user-facing attributes to XPath or CSS selectors." To dokładnie te informacje, które agent widzi w snapshotach dostępności. A seed, który używa page.locator('.btn-primary')? Uczy agenta powielać kruche selektory.
+
+Niezależność testów. Agent chętnie generuje testy, gdzie test B zakłada, że test A utworzył deck. Problem? Playwright uruchamia testy równolegle, w losowej kolejności. Dokumentacja jest tu jednoznaczna: "Each test should be completely isolated from another test and should run independently." Seed musi to demonstrować: pełny cykl setup, akcja, asercja, cleanup w jednym teście.
+
+Szablon promptu dla E2E
+
+Przepływ planner→generator to jedna droga w kroku PLAN. Druga, prostsza, to wygenerowanie pojedynczego testu bezpośrednio z promptu, przydatne, gdy chcesz jeden test bez inicjowania agentów Playwrighta. Tego szablonu nie wypełniasz ręcznie: /10x-e2e trzyma go w referencji e2e-prompt-template.md i uzupełnia za ciebie czterema polami: ryzyko z test-plan.md, research anchor, scenariusz biznesowy (jedno obserwowalne zachowanie, które staje się asercją) oraz granice prawdziwe kontra mockowane. Sam plik szablonu zostaje nienaruszony, a skill tworzy nowy plik z promptem dla konkretnego ryzyka.
+
+Kontrakt jest ten sam niezależnie od drogi. Nie powtarzasz w prompcie tego, co już jest w seed teście i regułach: seed kształtuje to, co generuje Generator, a reguły ograniczają agenta automatycznie. Prompt dodaje tylko to, czego seed i reguły nie znają: konkretne ryzyko, ścieżkę i granice.
+
+Porównaj z testem jednostkowym z lekcji o testach jednostkowych (M3L2). Tam wskazywałeś konkretną funkcję i ryzyko, które ma chronić. Tu podajesz całą ścieżkę użytkownika i jawnie oddzielasz granice prawdziwe od mockowanych. W E2E granice systemu są testem. Ale „business scenario" pełni tę samą rolę co tam: wymusza asercję powiązaną z ryzykiem, nie z implementacją. Niezależnie od tego, czy idziesz przez prompt, czy przez pipeline planner→generator, obowiązuje ten sam kontrakt: ryzyko, research anchor, business scenario, granice, asercja powiązana z ryzykiem.
+
+
+
+🧑🏻‍💻 Zadania praktyczne
+
+Seed test i reguły testowania
+
+Zanim agent zacznie generować testy E2E:
+
+
+
+
+
+Napisz seed.spec.ts, czyli jeden wzorcowy test, który demonstruje twoje konwencje pisania testów E2E: getByRole jako domyślny selektor, czekanie na stan zamiast na czas, unikalne identyfikatory w danych testowych, cleanup, nazwa testu powiązana z ryzykiem z context/foundation/test-plan.md.
+
+
+
+Pobierz skill /10x-e2e (npx @przeprogramowani/10x-cli@latest get m3l4). Wnosi on reguły E2E i pięć antywzorców jako jedno źródło, które agent czyta automatycznie.
+
+
+
+Uruchom agenta z poleceniem wygenerowania jednego testu i sprawdź, czy wynik respektuje seed i reguły.
+
+Eksploracja aplikacji przez CLI
+
+Zainstaluj Playwright CLI i otwórz swoją aplikację:
+
+npm install -g @playwright/cli@latest
+playwright-cli open http://localhost:3000 --headed
+
+Nawiguj po aplikacji używając komend CLI. Zwróć uwagę na snapshot z referencjami do elementów. Spróbuj kliknąć kilka elementów po referencji, wypełnić formularz, przejść między stronami.
+
+Konfiguracja storageState
+
+Zaloguj się do aplikacji przez CLI, zapisz stan sesji i zweryfikuj, że nowa sesja CLI startuje w stanie zalogowanym:
+
+playwright-cli open http://localhost:3000/login --headed
+# ... wypełnij formularz, zaloguj się ...
+playwright-cli state-save playwright/.auth/user.json
+
+Dodaj playwright/.auth/ do .gitignore. Skonfiguruj storageState w playwright.config.ts.
+
+Scenariusze E2E z mapy ryzyk
+
+
+
+
+
+Otwórz swój context/foundation/test-plan.md i wybierz 2 najwyższe ryzyka wymagające pokrycia E2E.
+
+
+
+Uruchom /10x-e2e na fazie planu z tym ryzykiem (/10x-e2e <change-id> phase N) albo wskaż mu ryzyko wprost. Skill przejdzie pętlę PLAN→GENERATE→REVIEW→VERIFY w oparciu o twój seed test i reguły. W kroku PLAN ma dwie drogi do tego samego kontraktu: szablon promptu (gdy chcesz jeden test bez inicjowania agentów Playwrighta) albo planner→generator (gdy chcesz, by agent sam wyeksplorował aplikację). Ty podajesz ryzyko i przeglądasz wynik.
+
+
+
+Review: przejrzyj każdy test pod kątem pięciu antywzorców. Dla każdej asercji zapytaj: „czy ta asercja padnie, jeśli ryzyko z context/foundation/test-plan.md się zmaterializuje?" Sprawdź selektory, niezależność testów, waity i cleanup. Jeśli znajdziesz antywzorzec, użyj re-promptu: wskaż konkretną wadę po nazwie i oczekiwany wzorzec.
+
+
+
+Celowe psucie: odwróć albo osłab w kodzie produkcyjnym zachowanie, którego dotyczy ryzyko, i potwierdź, że test pada na czerwono. Jeśli zostaje zielony, asercja niczego nie chroni, więc wróć do GENERATE. Na koniec cofnij zepsucie i nie commituj go.
+
+Izolacja danych testowych
+
+Upewnij się, że twoje testy E2E mogą uruchamiać się wielokrotnie bez konfliktów:
+
+
+
+
+
+Sprawdź, czy każdy test używa unikalnych identyfikatorów (np. Date.now() w nazwie decku).
+
+
+
+Sprawdź, czy testy sprzątają po sobie (cleanup w teście lub afterEach).
+
+
+
+Uruchom suite dwa razy pod rząd i zweryfikuj, że wszystkie testy przechodzą za każdym razem.
+
+(Opcjonalne) Dostosuj /10x-e2e do swojego kontekstu
+
+Skill dostajesz skrojony pod Playwrighta — potraktuj go jako punkt startowy i dostosuj jego referencje do swojej rzeczywistości:
+
+
+
+
+
+Inny stack. Na Cypress, WebdriverIO czy Selenium przepisz reguły i seed test na idiomy swojego narzędzia: jego odpowiednik getByRole, czekanie na stan, izolację danych. Zasady się przenoszą, zmienia się składnia.
+
+
+
+Konwencje zespołu. Wpisz swoje reguły lokatorów, nazewnictwo testów i ścieżki w repo, żeby generowane testy wyglądały jak reszta suite'u.
+
+
+
+Brak UI. Dla API bez interfejsu zmapuj ryzyka z test-plan.md na scenariusze HTTP, a antywzorce na warstwę requestów i danych.
+
+Uruchom dostosowany skill na jednym realnym ryzyku i potwierdź, że wynik respektuje twoje reguły. Jak /10x-e2e działa w środku i kiedy taki skill się opłaca, rozkłada Deep Dive „Workflow E2E jako skil

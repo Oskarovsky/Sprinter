@@ -1,0 +1,47 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - heading "Sign in" [level=1] [ref=e4]
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - generic [ref=e8]: Email
+        - generic [ref=e9]:
+          - img [ref=e11]
+          - textbox "Email" [ref=e14]:
+            - /placeholder: you@example.com
+      - generic [ref=e15]:
+        - generic [ref=e16]: Password
+        - generic [ref=e17]:
+          - img [ref=e19]
+          - textbox "Password" [ref=e22]:
+            - /placeholder: Your password
+          - button "Show password" [ref=e23]:
+            - img [ref=e24]
+      - button "Sign in" [ref=e27]:
+        - generic [ref=e28]:
+          - img
+          - text: Sign in
+      - generic [ref=e33]: or continue with
+      - link "Continue with Google" [ref=e34] [cursor=pointer]:
+        - /url: /api/auth/google?next=%2F
+        - img [ref=e35]
+        - text: Continue with Google
+    - paragraph [ref=e40]:
+      - text: Don't have an account?
+      - link "Sign up" [ref=e41] [cursor=pointer]:
+        - /url: /auth/signup
+    - paragraph [ref=e42]:
+      - link "Support" [ref=e43] [cursor=pointer]:
+        - /url: /support
+  - generic [ref=e46]:
+    - button "Menu" [ref=e47]:
+      - img [ref=e49]
+      - generic: Menu
+    - button "Inspect" [ref=e53]:
+      - img [ref=e55]
+      - generic: Inspect
+    - button "Audit" [ref=e57]:
+      - img [ref=e59]
+      - generic: Audit
+    - button "Settings" [ref=e62]:
+      - img [ref=e64]
+      - generic: Settings
