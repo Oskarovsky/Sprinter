@@ -1,6 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import type { User } from "@supabase/supabase-js";
 
+export const TEST_USER_EMAIL_SUFFIX = "@test.10x-sprinter.com";
+
 // Throw an error if the required environment variables are not set
 if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
   throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set");
