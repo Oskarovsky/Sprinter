@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: Not signed in
+      - generic [ref=e6]:
+        - link "Support" [ref=e7] [cursor=pointer]:
+          - /url: /support
+        - link "Sign in" [ref=e8] [cursor=pointer]:
+          - /url: /auth/signin
+        - link "Sign up" [ref=e9] [cursor=pointer]:
+          - /url: /auth/signup
+    - generic [ref=e10]:
+      - generic [ref=e11]:
+        - heading "Support" [level=1] [ref=e12]
+        - paragraph [ref=e13]: Questions, feedback, or something not working? Here is how to reach the 10xSprinter team.
+      - generic [ref=e14]:
+        - generic [ref=e15]:
+          - heading "About 10xSprinter" [level=2] [ref=e16]
+          - paragraph [ref=e17]: 10xSprinter is a web app for Scrum teams to run planning-poker sessions in a shared room. Planning poker for Scrum teams.
+        - generic [ref=e18]:
+          - heading "Maintainers" [level=2] [ref=e19]
+          - list [ref=e20]:
+            - listitem [ref=e21]:
+              - generic [ref=e22]: Oskarovsky
+              - generic [ref=e23]: Project maintainer
+        - generic [ref=e24]:
+          - heading "Contact" [level=2] [ref=e25]
+          - generic [ref=e26]:
+            - generic [ref=e27]:
+              - term [ref=e28]: General inquiries
+              - definition [ref=e29]:
+                - link "support@10xsprinter.example" [ref=e30] [cursor=pointer]:
+                  - /url: mailto:support@10xsprinter.example
+            - generic [ref=e31]:
+              - term [ref=e32]: Report a bug or request a feature
+              - definition [ref=e33]:
+                - text: Open an issue on GitHub with steps to reproduce, what you expected, and what happened instead.
+                - link "Open GitHub Issues →" [ref=e34] [cursor=pointer]:
+                  - /url: https://github.com/Oskarovsky/Sprinter/issues
+        - paragraph [ref=e35]:
+          - link "← Back to home" [ref=e36] [cursor=pointer]:
+            - /url: /
+  - generic [ref=e39]:
+    - button "Menu" [ref=e40]:
+      - img [ref=e42]
+      - generic: Menu
+    - button "Inspect" [ref=e46]:
+      - img [ref=e48]
+      - generic: Inspect
+    - button "Audit" [ref=e50]:
+      - img [ref=e52]
+      - generic: Audit
+    - button "Settings" [ref=e55]:
+      - img [ref=e57]
+      - generic: Settings
